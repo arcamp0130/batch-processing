@@ -1,6 +1,66 @@
-@use 'scheme';
+@use "scheme";
 
 body {
-    background-color: scheme.$background-color;
-    color: scheme.$foreground-color;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding: 0;
+  margin: 0;
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  background-color: scheme.$background-color;
+  color: scheme.$foreground-color;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 2rem 0;
+  background-color: scheme.$color-header;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin: 1rem;
+
+  h2 {
+    margin: 0 0 1rem 0;
+  }
+
+  .message-container {
+    margin-bottom: 1rem;
+  }
+
+  span#message-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+}
+
+.panel {
+  flex-grow: 1;
+  .input {
+    > * {
+      border: 1px solid scheme.$foreground-color;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background-color: scheme.$background-color-darker;
+    }
+    display: grid; // toggles to none to hide when processing
+    grid-template-columns: 1fr 3fr;
+    gap: 1rem;
+  }
+
+  .process {
+    display: none; // toggles to flex to display processing specs
+    justify-content: space-between;
+  }
 }

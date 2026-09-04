@@ -1,12 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batch Processing simulation</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Processing simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
-    <p>Hello there!</p>
+  <header>
+    <h1>Batch Processing Simulator</h1>
+  </header>
+
+  <main>
+    <div class="message-container">
+      <span id="message-display">Input operations</span>
+    </div>
+
+    <div class="panel">
+      <div class="input">
+        <div class="form">
+          This part of the input step will contain a form
+        </div>
+        <div class="preview">
+          This part of the input stel will contain a preview of jobs and batches
+        </div>
+      </div>
+      <div class="process">
+        <p>This div contains batches execution. Interactive via keyboard (No GUI)</p>
+      </div>
+    </div>
+  </main>
 </body>
 <script type="module" src="./scripts/index.ts"></script>
+
 </html>
