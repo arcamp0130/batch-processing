@@ -1,0 +1,6 @@
+@use 'scheme';
+
+body {
+    background-color: scheme.$background-color;
+    color: scheme.$foreground-color;
+}
