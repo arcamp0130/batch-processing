@@ -17,17 +17,57 @@
   </header>
 
   <main>
-    <div class="message-container">
-      <span id="message-display">Input operations</span>
+    <div class="title">
+      <span id="title-display">Input operations</span>
     </div>
 
     <div class="panel">
       <div class="input">
-        <div class="form">
-          This part of the input step will contain a form
+        <div class="form container">
+          <h3>Dev data</h3>
+          <div class="field">
+            <label for="username">Enter your name</label>
+            <input type="text" id="username" placeholder="Name">
+          </div>
+          <hr>
+          <h3>Process info</h3>
+          <div class="field">
+            <label for="process-ID">ID</label>
+            <input type="number" name="process-ID" id="process-ID" min="1" placeholder="123">
+          </div>
+          <div class="field">
+            <span>Operands and operation</span>
+            <div class="operation">
+              <input type="number" name="operand1" id="operand1" placeholder="123">
+              <select name="operation-type" id="operation-type">
+                <option selected value="add">+</option>
+                <option value="substract">-</option>
+                <option value="multiply">x</option>
+                <option value="divide">/</option>
+                <option value="module">%</option>
+              </select>
+              <input type="number" name="operand2" id="operand2" placeholder="123">
+            </div>
+          </div>
+          <div class="field">
+            <label for="JTL">Job Time Limit (seconds)</label>
+            <input type="number" name="JTL" id="JTL" min="1" placeholder="123">
+          </div>
+          <div class="field buttons">
+            <button type="button" id="clear-form">Clear</button>
+            <button type="button" id="add-job">Add process</button>
+          </div>
+          <hr>
+          <div class="field buttons">
+            <button type="button" id="start">Start processing</button>
+          </div>
+          <div class="alert container">
+            <h4 id="alert-title">Lorem</h4>
+            <p id="alert-message">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          </div>
         </div>
-        <div class="preview">
-          This part of the input stel will contain a preview of jobs and batches
+        <div class="preview container">
+          This part of the input step will contain a preview of jobs and batches
         </div>
       </div>
       <div class="process">
