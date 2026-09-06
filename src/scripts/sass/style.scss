@@ -221,13 +221,13 @@ main {
   }
 
   .input {
-    display: none; // toggles to none to hide when processing
+    display: grid; // toggles to none to hide when processing
     grid-template-columns: 1fr 3fr;
     gap: 1rem;
   }
 
   .process {
-    display: grid; // toggles to grid to display processing specs
+    display: none; // toggles to grid to display processing specs
     grid-template-columns: 1fr 1fr 2fr;
     gap: 1rem;
   }
