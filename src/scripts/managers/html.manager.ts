@@ -30,7 +30,7 @@ export default class HTMLManager {
 
     this.displays = {
       displayInput: document.querySelector("div.panel div.input"),
-      displayProcess: document.querySelector("div.panel div.process")
+      displayProcess: document.querySelector("div.panel div.process"),
     };
     this.inputs = {
       username: document.querySelector("input#username"),
@@ -57,6 +57,31 @@ export default class HTMLManager {
     this.previewTable = document.querySelector(
       "div.preview.container div.table",
     );
+
+    this.init();
+  }
+
+  private clearForm() {
+    this.inputs["username"]!.value = "";
+    this.inputs["processId"]!.value = "";
+    this.inputs["operand1"]!.value = "";
+    this.inputs["operand2"]!.value = "";
+    this.inputs["operation"]!.value = "add";
+    this.inputs["estimatedTime"]!.value = "";
+  }
+
+  private addTask() {}
+
+  private startProcessing() {}
+
+  private addListeners() {
+    this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
+    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
+    this.buttons["start"]!.addEventListener("click", () => this.startProcessing());
+  }
+
+  private init() {
+    this.addListeners();
   }
 
   private batchRecord(
@@ -89,7 +114,7 @@ export default class HTMLManager {
     const batch: HTMLElement = document.createElement("div");
     batch.classList.add("batch");
     batch.id = `#batch-${this.batchCount}`;
-    
+
     const header: HTMLElement = document.createElement("span");
     header.classList.add("header");
     header.textContent = `Batch ${this.batchCount}`;
