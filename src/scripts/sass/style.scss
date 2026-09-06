@@ -74,11 +74,59 @@ main {
   display: flex;
   flex-direction: column;
 
+  span#no-jobs {
+    // at least one job must me added to make this display become none
+    display: block;
+    margin: auto;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .table {
+    // at least one job must me added to make this display become block
+    display: none;
+  }
+}
+
+.working {
+  hr {
+    margin: 1.5rem 0;
+  }
+
+  .data {
+    margin: 0.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+
+    :nth-child(1) {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    :nth-child(2) {
+      text-align: left;
+    }
+  }
+}
+
+.done > .table {
+  .titles,
+  .batch > .record {
+    grid-template-columns: 1fr repeat(3, 2fr);
+  }
+
+  span[error] {
+    color: scheme.$foreground-error;
+  }
+}
+
+.table {
   .titles {
     display: grid;
     position: sticky;
     top: 0;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr repeat(2, 2fr);
     background-color: scheme.$background-color-darker;
     padding: 1rem 0;
     border-bottom: 1px solid scheme.$foreground-color;
@@ -88,19 +136,6 @@ main {
       text-align: center;
       font-weight: 600;
     }
-  }
-
-  span#no-jobs {
-    // at least one job must me added to make this display become none
-    display: block;
-    margin: auto;
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-
-  .table { 
-    // at least one job must me added to make this display become block
-    display: none;
   }
 
   .batch {
@@ -116,7 +151,7 @@ main {
     > .record {
       border-top: 1px solid scheme.$foreground-color;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr repeat(2, 2fr);
 
       span {
         padding: 0.5rem;
@@ -193,7 +228,7 @@ main {
 
   .process {
     display: grid; // toggles to grid to display processing specs
-    grid-template-columns: 2fr 1fr 2fr;
+    grid-template-columns: 1fr 1fr 2fr;
     gap: 1rem;
   }
 }

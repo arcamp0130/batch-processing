@@ -75,6 +75,7 @@
               <span>Process</span>
               <span>Time (s)</span>
             </div>
+            <!-- batches and rows added here -->
           </div>
         </div>
       </div>
@@ -83,14 +84,67 @@
         <div class="queue container">
           <h3>Queue</h3>
           <hr>
+          <div class="table">
+            <div class="titles">
+              <span>ID</span>
+              <span>Process</span>
+              <span>Time</span>
+            </div>
+            <!-- batches and rows added here -->
+          </div>
         </div>
         <div class="current container">
           <h3>Current</h3>
           <hr>
+          <div class="working">
+            <div class="data">
+              <span>Batch: </span>
+              <span id="work-batch-num">0</span>
+            </div>
+            <div class="data">
+              <span>Process ID: </span>
+              <span id="work-process-id">0</span>
+            </div>
+            <div class="data">
+              <span>Job: </span>
+              <span id="work-job-spec">0 ? 0</span>
+            </div>
+            <div class="data">
+              <span>Elapsed time: </span>
+              <span id="work-elapsed-time">0</span>
+            </div>
+            <div class="data">
+              <span>Estimated time: </span>
+              <span id="work-estimated-time">0</span>
+            </div>
+            <hr>
+            <h3>Resume</h3>
+            <div class="data">
+              <span>Elapsed time: </span>
+              <span id="work-total-elapsed-time">0</span>
+            </div>
+            <div class="data">
+              <span>Current batch: </span>
+              <span id="work-current-batch">0</span>
+            </div>
+            <div class="data">
+              <span>Pending batches: </span>
+              <span id="work-pending-batches">0</span>
+            </div>
+          </div>
         </div>
         <div class="done container">
           <h3>Done</h3>
           <hr>
+          <div class="table">
+            <div class="titles">
+              <span>ID</span>
+              <span>Process</span>
+              <span>Answer</span>
+              <span>Used time</span>
+            </div>
+            <!-- batches and rows added here -->
+          </div>
         </div>
       </div>
     </div>
