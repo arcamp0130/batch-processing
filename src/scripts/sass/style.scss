@@ -33,6 +33,7 @@ main {
   flex-direction: column;
   flex-grow: 1;
   margin: 1rem;
+  // max-height: 55rem;
 
   h2 {
     margin: 0 0 1rem 0;
@@ -50,7 +51,7 @@ main {
 
 .container {
   border: 1px solid scheme.$foreground-color;
-  padding: 1rem;
+  padding: 0 1rem;
   border-radius: 0.75rem;
   background-color: scheme.$background-color-darker;
 
@@ -70,13 +71,55 @@ main {
 }
 
 .preview {
-  &.empty {
-    display: flex;
-  
-    span#no-jobs {
-      margin: auto;
-      font-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+
+  .titles {
+    display: grid;
+    position: sticky;
+    top: 0;
+    grid-template-columns: repeat(3, 1fr);
+    background-color: scheme.$background-color-darker;
+    padding: 1rem 0;
+    border-bottom: 1px solid scheme.$foreground-color;
+
+    span {
+      padding: 0.5rem;
+      text-align: center;
       font-weight: 600;
+    }
+  }
+
+  &.data {
+    display: block;
+  }
+
+  span#no-jobs {
+    display: none;
+    margin: auto;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .batch {
+    display: flex;
+    flex-direction: column;
+
+    > .header {
+      margin: 0.5rem auto;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    > .record {
+      border-top: 1px solid scheme.$foreground-color;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+
+      span {
+        padding: 0.5rem;
+        text-align: center;
+      }
     }
   }
 }
