@@ -14,7 +14,6 @@ export default defineConfig({
         alias: {
             "@sass": path.resolve(import.meta.dirname, './src/scripts/sass'),
             "@managers/index": path.resolve(import.meta.dirname, './src/scripts/managers/managers.index.ts'),
-            "@managers": path.resolve(import.meta.dirname, './src/scripts/managers/'),
             "@types": path.resolve(import.meta.dirname, './src/scripts/types')
         }
     }
