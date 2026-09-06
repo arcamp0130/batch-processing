@@ -1,3 +1,8 @@
 import  "@sass/style.scss";
+import { HTMLManager } from "@managers/index";
 
-console.log("Hello from typescript!");
+function initApp(): void {
+    HTMLManager.Instance;
+}
+
+initApp();
