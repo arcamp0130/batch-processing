@@ -66,45 +66,15 @@
             <p id="alert-message">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
           </div>
         </div>
-        <!-- .preview.container can have class .data or .empty -->
-        <div class="preview container data">
-          <!-- when .empty, #no-jobs has display: block -->
-          <span id="no-jobs"></span>
+        <div class="preview container">
+          <!-- when empty, #no-jobs has display=block and .table=none, viceversa otherwhise -->
+          <span id="no-jobs">No works to display</span>
           <div class="table">
             <div class="titles">
               <span>ID</span>
               <span>Process</span>
               <span>Time (s)</span>
             </div>
-            <div class="batch" id="batch-1">
-              <span class="header">Batch 1</span>
-              <div class="record" batch-id="1" task-id="1">
-                <span>1</span>
-                <span>10 / 5</span>
-                <span>5.00</span>
-              </div>
-              <div class="record" batch-id="1" task-id="2">
-                <span>2</span>
-                <span>6 x 8</span>
-                <span>2.00</span>
-              </div>
-              <div class="record" batch-id="1" task-id="3">
-                <span>3</span>
-                <span>20 % 3</span>
-                <span>4.00</span>
-              </div>
-              <div class="record" batch-id="1" task-id="4">
-                <span>4</span>
-                <span>0 x 10</span>
-                <span>4.00</span>
-              </div>
-              <div class="record" batch-id="1" task-id="5">
-                <span>5</span>
-                <span>5 - 10</span>
-                <span>6.00</span>
-              </div>
-            </div>
-            
           </div>
         </div>
       </div>
