@@ -61,7 +61,8 @@ export default class HTMLManager {
     this.init();
   }
 
-  private clearForm() {
+  private clearForm(): void {
+    this.hideError();
     this.inputs["username"]!.value = "";
     this.inputs["processId"]!.value = "";
     this.inputs["operand1"]!.value = "";
@@ -70,17 +71,89 @@ export default class HTMLManager {
     this.inputs["estimatedTime"]!.value = "";
   }
 
-  private addTask() {}
-
-  private startProcessing() {}
-
-  private addListeners() {
-    this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
-    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
-    this.buttons["start"]!.addEventListener("click", () => this.startProcessing());
+  private hideError(): void {
+    this.alert["container"]!.style.display = "none";
   }
 
-  private init() {
+  private showError(title: string, message: string) {
+    this.alert["container"]!.style.display = "block";
+    this.alert["title"]!.textContent = title;
+    this.alert["message"]!.textContent = message;
+  }
+
+  private goodData(): boolean {
+    if (this.inputs["username"]!.value === "") {
+      this.showError("Who's this?", "Enter your name to continue");
+      return false;
+    }
+
+    if (
+      this.inputs["processId"]!.value == "" || // empty
+      isNaN(+this.inputs["processId"]!.value) || // NaN
+      +this.inputs["processId"]!.value <= 0 // <= 0
+    ) {
+      this.showError(
+        "Bad Identifier",
+        "You forgot or incorrectly wrote the process ID",
+      );
+      return false;
+    }
+
+    if (
+      this.inputs["operand1"]!.value == "" || // empty
+      isNaN(+this.inputs["operand1"]!.value) // NaN
+    ) {
+      this.showError(
+        "Where's the first number?",
+        "You forgot or incorrectly wrote the firs operand",
+      );
+      return false;
+    }
+
+    if (
+      this.inputs["operand2"]!.value == "" || // empty
+      isNaN(+this.inputs["operand2"]!.value) // NaN
+    ) {
+      this.showError(
+        "Where's the second number?",
+        "You forgot or incorrectly wrote the second operand",
+      );
+      return false;
+    }
+
+    if (
+      this.inputs["estimatedTime"]!.value == "" || // empty
+      isNaN(+this.inputs["estimatedTime"]!.value) || // NaN
+      +this.inputs["estimatedTime"]!.value <= 0 // <= 0
+    ) {
+      this.showError(
+        "Have no time",
+        "You forgot or incorrectly wrote the estimated time",
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  private addTask(): void {
+    this.hideError();
+    if (!this.goodData()) return;
+  }
+
+  private startProcessing(): void {
+    this.hideError();
+  }
+
+  private addListeners(): void {
+    this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
+    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
+    this.buttons["start"]!.addEventListener("click", () =>
+      this.startProcessing(),
+    );
+  }
+
+  private init(): void {
     this.addListeners();
   }
 
