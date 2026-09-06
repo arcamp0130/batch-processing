@@ -1,8 +1,8 @@
-export type OperationNames = 'plus' | 'minus' | 'multiply' | 'divide' | 'module';
+export type OperationNames = 'add' | 'substract' | 'multiply' | 'divide' | 'module';
 export const Operations: Record<OperationNames, string> =
 {
-    plus: '+',
-    minus: '-',
+    add: '+',
+    substract: '-',
     multiply: '×',
     divide: '÷',
     module: '%',
