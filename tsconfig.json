@@ -5,10 +5,16 @@
     // File Layout
     "rootDir": "./",
     "outDir": "./dist/",
+    "paths": {
+        "@sass/*": ["./src/scripts/sass/*"],
+        "@managers/index": ["./src/scripts/managers/managers.index.ts"],
+        "@managers/*": ["./src/scripts/managers/*"],
+        "@types/*":["./src/scripts/types/*"]
+    },
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
+    "module": "es2022",
     "target": "esnext",
     // "types": [],
     // For nodejs:
