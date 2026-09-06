@@ -1,6 +1,234 @@
-@use 'scheme';
+@use "scheme";
+
+* {
+  font-family: "Noto Sans", sans-serif;
+  font-optical-sizing: auto;
+  color: scheme.$foreground-color;
+}
 
 body {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  padding: 0;
+  margin: 0;
+  background-color: scheme.$background-color;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0;
+  padding: 2rem 0;
+  background-color: scheme.$color-header;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin: 1rem;
+  // max-height: 55rem;
+
+  h2 {
+    margin: 0 0 1rem 0;
+  }
+
+  .title {
+    margin: 1rem 0;
+  }
+
+  span#title-display {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+}
+
+.container {
+  border: 1px solid scheme.$foreground-color;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  background-color: scheme.$background-color-darker;
+
+  &.alert {
+    border: none;
+    display: none; // toggles to block to show UI alert message
+    background-color: scheme.$background-error;
+    margin: 1rem 2rem;
+    border-radius: 1rem;
+    padding: 1rem;
+
+    > * {
+      margin: 0;
+      text-align: center;
+    }
+  }
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+
+  span#no-jobs {
+    // at least one job must me added to make this display become none
+    display: block;
+    margin: auto;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .table {
+    // at least one job must me added to make this display become block
+    display: none;
+  }
+}
+
+.working {
+  hr {
+    margin: 1.5rem 0;
+  }
+
+  .data {
+    margin: 0.5rem 0;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+
+    :nth-child(1) {
+      text-align: right;
+      font-weight: 600;
+    }
+
+    :nth-child(2) {
+      text-align: left;
+    }
+  }
+}
+
+.done > .table {
+  .titles,
+  .batch > .record {
+    grid-template-columns: 1fr repeat(3, 2fr);
+  }
+
+  span[error] {
+    color: scheme.$foreground-error;
+  }
+}
+
+.table {
+  .titles {
+    display: grid;
+    position: sticky;
+    top: 0;
+    grid-template-columns: 1fr repeat(2, 2fr);
+    background-color: scheme.$background-color-darker;
+    padding: 1rem 0;
+    border-bottom: 1px solid scheme.$foreground-color;
+
+    span {
+      padding: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+    }
+  }
+
+  .batch {
+    display: flex;
+    flex-direction: column;
+
+    > .header {
+      margin: 0.5rem auto;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    > .record {
+      border-top: 1px solid scheme.$foreground-color;
+      display: grid;
+      grid-template-columns: 1fr repeat(2, 2fr);
+
+      span {
+        padding: 0.5rem;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin: 1rem 0;
+  width: auto;
+
+  input,
+  select,
+  button {
+    transition: 200ms;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 0.25rem;
     background-color: scheme.$background-color;
-    color: scheme.$foreground-color;
+    margin: 0.5rem 0 0 0;
+
+    &:hover {
+      transition: 200ms;
+      background-color: scheme.$background-hover;
+    }
+
+    &:focus {
+      outline: 1px solid scheme.$foreground-color;
+      background-color: scheme.$background-hover;
+    }
+  }
+
+  .operation {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+
+    > input[type="number"] {
+      width: 40%;
+    }
+    > select {
+      width: 20%;
+    }
+  }
+
+  &.buttons {
+    button {
+      width: 100%;
+    }
+
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+.panel {
+  flex-grow: 1;
+  height: 100%;
+
+  > * {
+    height: 100%;
+  }
+
+  .input {
+    display: grid; // toggles to none to hide when processing
+    grid-template-columns: 1fr 3fr;
+    gap: 1rem;
+  }
+
+  .process {
+    display: none; // toggles to grid to display processing specs
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 1rem;
+  }
 }

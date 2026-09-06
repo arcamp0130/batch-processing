@@ -1,12 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Batch Processing simulation</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Batch Processing simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
-    <p>Hello there!</p>
+  <header>
+    <h1>Batch Processing Simulator</h1>
+  </header>
+
+  <main>
+    <div class="title">
+      <!-- At second stage changes to "Processing" -->
+      <span id="title-display">Input operations</span>
+    </div>
+
+    <div class="panel">
+      <div class="input">
+        <div class="form container">
+          <h3>Dev data</h3>
+          <div class="field">
+            <label for="username">Enter your name</label>
+            <input type="text" id="username" placeholder="Name">
+          </div>
+          <hr>
+          <h3>Process info</h3>
+          <div class="field">
+            <label for="process-ID">ID</label>
+            <input type="number" name="process-ID" id="process-ID" min="1" placeholder="123">
+          </div>
+          <div class="field">
+            <span>Operands and operation</span>
+            <div class="operation">
+              <input type="number" name="operand1" id="operand1" placeholder="123">
+              <select name="operation-type" id="operation-type">
+                <option selected value="add">+</option>
+                <option value="substract">-</option>
+                <option value="multiply">x</option>
+                <option value="divide">/</option>
+                <option value="module">%</option>
+              </select>
+              <input type="number" name="operand2" id="operand2" placeholder="123">
+            </div>
+          </div>
+          <div class="field">
+            <label for="JTL">Job Time Limit (JTL) (seconds)</label>
+            <input type="number" name="JTL" id="JTL" min="1" placeholder="123">
+          </div>
+          <div class="field buttons">
+            <button type="button" id="clear-form">Clear</button>
+            <button type="button" id="add-job">Add process</button>
+          </div>
+          <hr>
+          <div class="field buttons">
+            <button type="button" id="start">Start processing</button>
+          </div>
+          <div class="alert container">
+            <h4 id="alert-title">Lorem</h4>
+            <p id="alert-message">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+          </div>
+        </div>
+        <div class="preview container">
+          <!-- when empty, #no-jobs has display=block and .table=none, viceversa otherwhise -->
+          <span id="no-jobs">No works to display</span>
+          <div class="table">
+            <div class="titles">
+              <span>ID</span>
+              <span>Process</span>
+              <span>Time (s)</span>
+            </div>
+            <!-- batches and rows added here -->
+          </div>
+        </div>
+      </div>
+
+      <div class="process">
+        <div class="queue container">
+          <h3>Queue</h3>
+          <hr>
+          <div class="table">
+            <div class="titles">
+              <span>ID</span>
+              <span>Process</span>
+              <span>Time</span>
+            </div>
+            <!-- batches and rows added here -->
+          </div>
+        </div>
+        <div class="current container">
+          <h3>Current</h3>
+          <hr>
+          <div class="working">
+            <div class="data">
+              <span>Batch: </span>
+              <span id="work-batch-num">0</span>
+            </div>
+            <div class="data">
+              <span>Process ID: </span>
+              <span id="work-process-id">0</span>
+            </div>
+            <div class="data">
+              <span>Job: </span>
+              <span id="work-job-spec">0 ? 0</span>
+            </div>
+            <div class="data">
+              <span>Elapsed time: </span>
+              <span id="work-elapsed-time">0</span>
+            </div>
+            <div class="data">
+              <span>Estimated time: </span>
+              <span id="work-estimated-time">0</span>
+            </div>
+            <hr>
+            <h3>Resume</h3>
+            <div class="data">
+              <span>Elapsed time: </span>
+              <span id="work-total-elapsed-time">0</span>
+            </div>
+            <div class="data">
+              <span>Current batch: </span>
+              <span id="work-current-batch">0</span>
+            </div>
+            <div class="data">
+              <span>Pending batches: </span>
+              <span id="work-pending-batches">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="done container">
+          <h3>Done</h3>
+          <hr>
+          <div class="table">
+            <div class="titles">
+              <span>ID</span>
+              <span>Process</span>
+              <span>Answer</span>
+              <span>Used time</span>
+            </div>
+            <!-- batches and rows added here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 </body>
 <script type="module" src="./scripts/index.ts"></script>
+
 </html>
