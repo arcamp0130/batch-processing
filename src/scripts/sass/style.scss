@@ -186,13 +186,14 @@ main {
   }
 
   .input {
-    display: grid; // toggles to none to hide when processing
+    display: none; // toggles to none to hide when processing
     grid-template-columns: 1fr 3fr;
     gap: 1rem;
   }
 
   .process {
-    display: none; // toggles to flex to display processing specs
-    justify-content: space-between;
+    display: grid; // toggles to grid to display processing specs
+    grid-template-columns: 2fr 1fr 2fr;
+    gap: 1rem;
   }
 }
