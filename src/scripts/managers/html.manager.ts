@@ -15,6 +15,7 @@ export default class HTMLManager {
   private currentBatchTaskCount: number = 0;
   private currentBatch: Batch | null;
   private taskIds: number[] = [];
+  private timeSum: number = 0;
 
   private globalTimer$: Observable<number> | undefined = undefined;
   private taskTimer$: Observable<number> | undefined = undefined;
@@ -87,6 +88,8 @@ export default class HTMLManager {
 
     this.workingSpecs = {
       totalTime: document.querySelector("span#work-total-elapsed-time"),
+      totalEstimatedTime: document.querySelector("span#work-total-time"),
+      remainingTime: document.querySelector("span#work-remaining-time"),
       pendingBatches: document.querySelector("span#work-pending-batches"),
       currentBatch: document.querySelector("span#work-current-batch"),
     };
@@ -216,6 +219,8 @@ export default class HTMLManager {
     };
     const newRecord = this.batchRecord(newTask);
 
+    this.timeSum += +this.inputs["estimatedTime"]!.value;
+
     this.currentBatch?.enqueue(newTask);
 
     this.taskIds.push(+this.inputs["processId"]!.value);
@@ -235,6 +240,7 @@ export default class HTMLManager {
 
     this.displays["input"]!.style.display = "none";
     this.displays["process"]!.style.display = "grid";
+    this.workingSpecs["totalEstimatedTime"]!.textContent = `${this.timeSum}`;
     this.titleDisplay!.textContent = "Processing";
     this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
@@ -243,9 +249,10 @@ export default class HTMLManager {
       rxjsMap((val) => val + 1),
     );
 
-    this.globalTimerSub$ = this.globalTimer$.subscribe(
-      (count) => (this.workingSpecs["totalTime"]!.textContent = `${count}`),
-    );
+    this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
+      this.workingSpecs["totalTime"]!.textContent = `${count}`;
+      this.workingSpecs["remainingTime"]!.textContent = `${this.timeSum - count}`
+    });
 
     BatchesManager.Instance.getControl();
   }
