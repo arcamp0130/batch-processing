@@ -19,6 +19,7 @@ export default class HTMLManager {
   private readonly buttons: { [key: string]: HTMLButtonElement | null };
   private readonly alert: { [key: string]: HTMLElement | null };
   private readonly tables: { [key: string]: HTMLElement | null };
+  private readonly workingTask: { [key: string]: HTMLElement | null };
 
   private readonly noJobsSpan: HTMLElement | null;
 
@@ -62,12 +63,19 @@ export default class HTMLManager {
 
     this.tables = {
       preview: document.querySelector("div.preview.container div.table"),
-      queue: document.querySelector("div.queue.container div.table"),
-      done: document.querySelector("div.donde.container div.table"),
+      queue: document.querySelector("div.queue.container div.batch.permanent"),
+      done: document.querySelector("div.done.container div.table"),
+    };
+
+    this.workingTask = {
+      batch: document.querySelector("span#work-batch-num"),
+      id: document.querySelector("span#work-process-id"),
+      job: document.querySelector("span#work-job-spec"),
+      elapsedTime: document.querySelector("span#work-elapsed-time"),
+      estimatedTime: document.querySelector("span#work-estimated-time"),
     };
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
-
     this.devNameSpan = document.querySelector("span#work-name");
 
     this.currentBatch = null;
@@ -263,5 +271,23 @@ export default class HTMLManager {
     batch.appendChild(header);
 
     return batch;
+  }
+
+  public screenDequeue() {
+    const queueTable: HTMLElement = this.tables["queue"]!;
+    queueTable.removeChild(queueTable.firstElementChild!);
+  }
+
+  public screenEnqueue(task: Task) {
+    this.tables["queue"]!.appendChild(this.batchRecord(task));
+  }
+
+  public screenUpdateCurrent(task: Task, batchNum: number) {
+    this.workingTask["batch"]!.textContent = `${batchNum}`;
+    this.workingTask["id"]!.textContent = `${task.id}`;
+    this.workingTask["job"]!.textContent =
+      `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
+    this.workingTask["elapsedTime"]!.textContent = `0`;
+    this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
   }
 }
