@@ -1,3 +1,4 @@
 import HTMLManager from "./html.manager";
+import BatchesManager from "./batches.manager";
 
-export { HTMLManager };
+export { HTMLManager, BatchesManager };
