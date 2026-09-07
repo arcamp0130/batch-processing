@@ -1,4 +1,7 @@
 import { Operations, type OperationNames } from "../types/math.type";
+import { Queue } from "@structures/index";
+import { type Batch, type Task } from "../types/processing.type";
+import { BatchesManager } from "@managers/index";
 
 export default class HTMLManager {
   private static insance: HTMLManager;
@@ -6,6 +9,7 @@ export default class HTMLManager {
   private batchCount: number = 0;
   private htmlCurrentBatch: HTMLElement | undefined;
   private currentBatchTaskCount: number = 0;
+  private currentBatch: Batch | null;
   private taskIds: number[] = [];
 
   private readonly titleDisplay: HTMLElement | null;
@@ -30,8 +34,8 @@ export default class HTMLManager {
     this.titleDisplay = document.querySelector("span#title-display");
 
     this.displays = {
-      displayInput: document.querySelector("div.panel div.input"),
-      displayProcess: document.querySelector("div.panel div.process"),
+      input: document.querySelector("div.panel div.input"),
+      process: document.querySelector("div.panel div.process"),
     };
     this.inputs = {
       username: document.querySelector("input#username"),
@@ -58,6 +62,8 @@ export default class HTMLManager {
     this.previewTable = document.querySelector(
       "div.preview.container div.table",
     );
+
+    this.currentBatch = null;
 
     this.init();
   }
@@ -142,11 +148,15 @@ export default class HTMLManager {
     return true;
   }
 
+  private sendBatch(): void {
+    BatchesManager.Instance.recieveBatch(this.currentBatch!);
+  }
+
   private newBatch(): void {
     this.batchCount++;
     this.htmlCurrentBatch = this.batchLayout();
     this.previewTable!.appendChild(this.htmlCurrentBatch);
-    console.log(this.batchCount);
+    this.currentBatch = new Queue<Task>();
   }
 
   private addTask(): void {
@@ -161,10 +171,19 @@ export default class HTMLManager {
 
     if (this.currentBatchTaskCount === 5) {
       this.currentBatchTaskCount = 0;
+      this.sendBatch();
       this.newBatch();
     }
 
     this.currentBatchTaskCount++;
+
+    const newTask: Task = {
+      id: +this.inputs["processId"]!.value,
+      operand1: +this.inputs["operand1"]!.value,
+      operation: this.inputs["operation"]!.value as OperationNames,
+      operand2: +this.inputs["operand2"]!.value,
+      time: +this.inputs["estimatedTime"]!.value,
+    };
     const newRecord = this.batchRecord(
       +this.inputs["processId"]!.value,
       +this.inputs["operand1"]!.value,
@@ -172,12 +191,28 @@ export default class HTMLManager {
       +this.inputs["operand2"]!.value,
       +this.inputs["estimatedTime"]!.value,
     );
+
+    this.currentBatch?.enqueue(newTask);
+
     this.taskIds.push(+this.inputs["processId"]!.value);
     this.htmlCurrentBatch!.appendChild(newRecord);
   }
 
   private startProcessing(): void {
     this.hideError();
+
+    if (this.batchCount == 0) {
+      this.showError("What did you do?", "There are no batches to send")
+      return;
+    }
+
+    this.sendBatch();
+
+    this.displays["input"]!.style.display = 'none'
+    this.displays["process"]!.style.display = 'grid'
+
+    BatchesManager.Instance.getControl()
+
   }
 
   private addListeners(): void {
