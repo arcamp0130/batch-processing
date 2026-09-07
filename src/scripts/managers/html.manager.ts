@@ -4,6 +4,7 @@ export default class HTMLManager {
   private static insance: HTMLManager;
 
   private batchCount: number = 0;
+  private htmlCurrentBatch: HTMLElement | undefined;
   private currentBatchTaskCount: number = 0;
   private taskIds: number[] = [];
 
@@ -99,6 +100,14 @@ export default class HTMLManager {
       return false;
     }
 
+    if (this.taskIds.includes(+this.inputs["processId"]!.value)) {
+      this.showError(
+        "Pay attention!",
+        "This ID already exists.",
+      );
+      return false;
+    }
+
     if (
       this.inputs["operand1"]!.value == "" || // empty
       isNaN(+this.inputs["operand1"]!.value) // NaN
@@ -136,9 +145,38 @@ export default class HTMLManager {
     return true;
   }
 
+  private newBatch(): void {
+    this.batchCount++;
+    this.htmlCurrentBatch = this.batchLayout();
+    this.previewTable!.appendChild(this.htmlCurrentBatch);
+    console.log(this.batchCount);
+  }
+
   private addTask(): void {
     this.hideError();
     if (!this.goodData()) return;
+
+    if (this.batchCount === 0) {
+      this.noJobsSpan!.style.display = "none";
+      this.previewTable!.style.display = "block";
+      this.newBatch();
+    }
+
+    if (this.currentBatchTaskCount === 5) {
+      this.currentBatchTaskCount = 0;
+      this.newBatch();
+    }
+
+    this.currentBatchTaskCount++;
+    const newRecord = this.batchRecord(
+      +this.inputs["processId"]!.value,
+      +this.inputs["operand1"]!.value,
+      this.inputs["operation"]!.value as OperationNames,
+      +this.inputs["operand2"]!.value,
+      +this.inputs["estimatedTime"]!.value,
+    );
+    this.taskIds.push(+this.inputs["processId"]!.value);
+    this.htmlCurrentBatch!.appendChild(newRecord);
   }
 
   private startProcessing(): void {
@@ -166,7 +204,7 @@ export default class HTMLManager {
   ): HTMLElement {
     const record: HTMLElement = document.createElement("div");
     record.classList.add("record");
-    record.id = `b${this.batchCount}-e${this.currentBatchTaskCount}`;
+    record.id = `b${this.batchCount}-t${this.currentBatchTaskCount}`;
 
     const idSpan: HTMLElement = document.createElement("span");
     const operationSpan: HTMLElement = document.createElement("span");
@@ -174,7 +212,7 @@ export default class HTMLManager {
 
     idSpan.textContent = `${taskId}`;
     operationSpan.textContent = `${fisrtOperand} ${Operations[operation]} ${secondOperand}`;
-    timeSpan.textContent = `${estimatedTime}s`;
+    timeSpan.textContent = `${estimatedTime} s`;
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
