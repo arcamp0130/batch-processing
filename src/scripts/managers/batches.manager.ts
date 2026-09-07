@@ -29,8 +29,13 @@ export default class BatchesManager {
   }
 
   public async getControl(): Promise<void> {
+    const batchesNum: number = this.batches.size;
+
     while (!this.batches.isEmpty()) {
       this.batchCount++;
+      console.log(this.batches.size);
+      HTMLManager.Instance.updatePending(batchesNum - this.batchCount);
+
       const auxBatch: Batch = this.batches.dequeue()!;
 
       while (!auxBatch.isEmpty()) {
@@ -38,22 +43,16 @@ export default class BatchesManager {
         HTMLManager.Instance.screenEnqueue(currentTask);
         this.currentBatch.enqueue(currentTask);
       }
-      // must haven't changed
-      console.log(this.currentBatch);
 
       while (!this.currentBatch.isEmpty()) {
         const currentTask: Task = this.currentBatch.dequeue()!;
         HTMLManager.Instance.screenDequeue();
-        HTMLManager.Instance.screenUpdateCurrent(
-          currentTask,
-          this.batchCount,
-        );
+        HTMLManager.Instance.screenUpdateCurrent(currentTask, this.batchCount);
         await sleep(currentTask.time * 1000);
-        console.log("Task done!");
+        HTMLManager.Instance.taskTimerSub$!.unsubscribe();
       }
-      console.log("End of tasks")
-    
+      console.log("End of tasks");
     }
-    console.log("End of batches!!")
+    HTMLManager.Instance.globalTimerSub$!.unsubscribe();
   }
 }

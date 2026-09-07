@@ -3,7 +3,7 @@ import { Queue } from "@structures/index";
 import { type Batch, type Task } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
 
-import { interval, Observable } from "rxjs";
+import { interval, Observable, Subscription } from "rxjs";
 import { map as rxjsMap, startWith } from "rxjs/operators";
 
 export default class HTMLManager {
@@ -14,6 +14,12 @@ export default class HTMLManager {
   private currentBatchTaskCount: number = 0;
   private currentBatch: Batch | null;
   private taskIds: number[] = [];
+
+  private globalTimer$: Observable<number> | undefined = undefined;
+  private taskTimer$: Observable<number> | undefined = undefined;
+
+  public globalTimerSub$: Subscription | undefined = undefined;
+  public taskTimerSub$: Subscription | undefined = undefined;
 
   private readonly titleDisplay: HTMLElement | null;
 
@@ -80,8 +86,8 @@ export default class HTMLManager {
 
     this.workingSpecs = {
       totalTime: document.querySelector("span#work-total-elapsed-time"),
-      pendingBatches: document.querySelector("span#work-pending-batches")
-    }
+      pendingBatches: document.querySelector("span#work-pending-batches"),
+    };
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
@@ -230,14 +236,14 @@ export default class HTMLManager {
     this.titleDisplay!.textContent = "Processing";
     this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
-    const timer$: Observable<Number> = interval(1000).pipe(
+    this.globalTimer$ = interval(1000).pipe(
       startWith(0),
-      rxjsMap((val) => val + 1)
-    )
+      rxjsMap((val) => val + 1),
+    );
 
-    timer$.subscribe((count) => 
-      this.workingSpecs["totalTime"]!.textContent = `${count}`
-    )
+    this.globalTimerSub$ = this.globalTimer$.subscribe(
+      (count) => this.workingSpecs["totalTime"]!.textContent = `${count}`,
+    );
 
     BatchesManager.Instance.getControl();
   }
@@ -304,7 +310,19 @@ export default class HTMLManager {
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
       `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
-    this.workingTask["elapsedTime"]!.textContent = `0`;
+
+    this.taskTimer$ = interval(1000).pipe(
+      startWith(0),
+      rxjsMap((val) => val + 1)
+    );
+    this.taskTimerSub$ = this.taskTimer$.subscribe(
+      (count) => this.workingTask["elapsedTime"]!.textContent = `${count}`
+    );
+    
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
+  }
+
+  public updatePending(batchNum: Number) {
+    this.workingSpecs["pendingBatches"]!.textContent = `${batchNum}`;
   }
 }
