@@ -101,10 +101,7 @@ export default class HTMLManager {
     }
 
     if (this.taskIds.includes(+this.inputs["processId"]!.value)) {
-      this.showError(
-        "Pay attention!",
-        "This ID already exists.",
-      );
+      this.showError("Pay attention!", "This ID already exists.");
       return false;
     }
 
@@ -186,6 +183,9 @@ export default class HTMLManager {
   private addListeners(): void {
     this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
     this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
+    document.addEventListener("keydown", (event) => {
+      if (event.key == "Enter") this.addTask();
+    });
     this.buttons["start"]!.addEventListener("click", () =>
       this.startProcessing(),
     );
