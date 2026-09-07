@@ -9,6 +9,7 @@
         "@sass/*": ["./src/scripts/sass/*"],
         "@managers/index": ["./src/scripts/managers/managers.index.ts"],
         "@structures/index": ["./src/scripts/structures/structures.index.ts"],
+        "@workers/index": ["./src/scripts/workers/workers.index.ts"],
         "@types/*":["./src/scripts/types/*"]
     },
 
