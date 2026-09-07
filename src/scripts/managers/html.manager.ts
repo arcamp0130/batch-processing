@@ -18,9 +18,9 @@ export default class HTMLManager {
   private readonly inputs: { [key: string]: HTMLInputElement | null };
   private readonly buttons: { [key: string]: HTMLButtonElement | null };
   private readonly alert: { [key: string]: HTMLElement | null };
+  private readonly tables: { [key: string]: HTMLElement | null };
 
   private readonly noJobsSpan: HTMLElement | null;
-  private readonly previewTable: HTMLElement | null;
 
   private readonly devNameSpan: HTMLElement | null;
 
@@ -60,10 +60,13 @@ export default class HTMLManager {
       message: document.querySelector("p#alert-message"),
     };
 
+    this.tables = {
+      preview: document.querySelector("div.preview.container div.table"),
+      queue: document.querySelector("div.queue.container div.table"),
+      done: document.querySelector("div.donde.container div.table"),
+    };
+
     this.noJobsSpan = document.querySelector("span#no-jobs");
-    this.previewTable = document.querySelector(
-      "div.preview.container div.table",
-    );
 
     this.devNameSpan = document.querySelector("span#work-name");
 
@@ -159,7 +162,7 @@ export default class HTMLManager {
   private newBatch(): void {
     this.batchCount++;
     this.htmlCurrentBatch = this.batchLayout();
-    this.previewTable!.appendChild(this.htmlCurrentBatch);
+    this.tables["preview"]!.appendChild(this.htmlCurrentBatch);
     this.currentBatch = new Queue<Task>();
   }
 
@@ -169,7 +172,7 @@ export default class HTMLManager {
 
     if (this.batchCount === 0) {
       this.noJobsSpan!.style.display = "none";
-      this.previewTable!.style.display = "block";
+      this.tables["preview"]!.style.display = "block";
       this.newBatch();
     }
 
@@ -188,13 +191,7 @@ export default class HTMLManager {
       operand2: +this.inputs["operand2"]!.value,
       time: +this.inputs["estimatedTime"]!.value,
     };
-    const newRecord = this.batchRecord(
-      +this.inputs["processId"]!.value,
-      +this.inputs["operand1"]!.value,
-      this.inputs["operation"]!.value as OperationNames,
-      +this.inputs["operand2"]!.value,
-      +this.inputs["estimatedTime"]!.value,
-    );
+    const newRecord = this.batchRecord(newTask);
 
     this.currentBatch?.enqueue(newTask);
 
@@ -235,24 +232,17 @@ export default class HTMLManager {
     this.addListeners();
   }
 
-  private batchRecord(
-    taskId: number,
-    fisrtOperand: number,
-    operation: OperationNames,
-    secondOperand: number,
-    estimatedTime: number,
-  ): HTMLElement {
+  private batchRecord(task: Task): HTMLElement {
     const record: HTMLElement = document.createElement("div");
     record.classList.add("record");
-    record.id = `b${this.batchCount}-t${this.currentBatchTaskCount}`;
 
     const idSpan: HTMLElement = document.createElement("span");
     const operationSpan: HTMLElement = document.createElement("span");
     const timeSpan: HTMLElement = document.createElement("span");
 
-    idSpan.textContent = `${taskId}`;
-    operationSpan.textContent = `${fisrtOperand} ${Operations[operation]} ${secondOperand}`;
-    timeSpan.textContent = `${estimatedTime} s`;
+    idSpan.textContent = `${task.id}`;
+    operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
+    timeSpan.textContent = `${task.time} s`;
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
