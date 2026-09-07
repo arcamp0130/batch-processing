@@ -3,6 +3,9 @@ import { Queue } from "@structures/index";
 import { type Batch, type Task } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
 
+import { interval, Observable } from "rxjs";
+import { map as rxjsMap, startWith } from "rxjs/operators";
+
 export default class HTMLManager {
   private static insance: HTMLManager;
 
@@ -20,9 +23,9 @@ export default class HTMLManager {
   private readonly alert: { [key: string]: HTMLElement | null };
   private readonly tables: { [key: string]: HTMLElement | null };
   private readonly workingTask: { [key: string]: HTMLElement | null };
+  private readonly workingSpecs: { [key: string]: HTMLElement | null };
 
   private readonly noJobsSpan: HTMLElement | null;
-
   private readonly devNameSpan: HTMLElement | null;
 
   // singleton design pattern
@@ -74,6 +77,11 @@ export default class HTMLManager {
       elapsedTime: document.querySelector("span#work-elapsed-time"),
       estimatedTime: document.querySelector("span#work-estimated-time"),
     };
+
+    this.workingSpecs = {
+      totalTime: document.querySelector("span#work-total-elapsed-time"),
+      pendingBatches: document.querySelector("span#work-pending-batches")
+    }
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
@@ -221,6 +229,15 @@ export default class HTMLManager {
     this.displays["process"]!.style.display = "grid";
     this.titleDisplay!.textContent = "Processing";
     this.devNameSpan!.textContent = this.inputs["username"]!.value;
+
+    const timer$: Observable<Number> = interval(1000).pipe(
+      startWith(0),
+      rxjsMap((val) => val + 1)
+    )
+
+    timer$.subscribe((count) => 
+      this.workingSpecs["totalTime"]!.textContent = `${count}`
+    )
 
     BatchesManager.Instance.getControl();
   }
