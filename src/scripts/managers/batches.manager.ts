@@ -2,6 +2,10 @@ import { Queue } from "@structures/index";
 import { type Batch, type Task } from "../types/processing.type";
 import HTMLManager from "./html.manager";
 
+const sleep = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
 export default class BatchesManager {
   private static insance: BatchesManager;
   private batches: Queue<Batch>;
@@ -24,29 +28,32 @@ export default class BatchesManager {
     this.batches.enqueue(batch);
   }
 
-  public getControl() {
+  public async getControl(): Promise<void> {
     while (!this.batches.isEmpty()) {
       this.batchCount++;
       const auxBatch: Batch = this.batches.dequeue()!;
-      let currentTask: Task;
 
       while (!auxBatch.isEmpty()) {
-        currentTask = auxBatch.dequeue()!;
+        const currentTask: Task = auxBatch.dequeue()!;
         HTMLManager.Instance.screenEnqueue(currentTask);
         this.currentBatch.enqueue(currentTask);
       }
       // must haven't changed
       console.log(this.currentBatch);
 
-      // while (!this.currentBatch.isEmpty()) {
-
-      // }
-
-      HTMLManager.Instance.screenDequeue();
-      HTMLManager.Instance.screenUpdateCurrent(
-        this.currentBatch!.peek()!,
-        this.batchCount,
-      );
+      while (!this.currentBatch.isEmpty()) {
+        const currentTask: Task = this.currentBatch.dequeue()!;
+        HTMLManager.Instance.screenDequeue();
+        HTMLManager.Instance.screenUpdateCurrent(
+          currentTask,
+          this.batchCount,
+        );
+        await sleep(currentTask.time * 1000);
+        console.log("Task done!");
+      }
+      console.log("End of tasks")
+    
     }
+    console.log("End of batches!!")
   }
 }
