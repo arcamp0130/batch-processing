@@ -88,6 +88,7 @@ export default class HTMLManager {
     this.workingSpecs = {
       totalTime: document.querySelector("span#work-total-elapsed-time"),
       pendingBatches: document.querySelector("span#work-pending-batches"),
+      currentBatch: document.querySelector("span#work-current-batch"),
     };
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
@@ -338,7 +339,8 @@ export default class HTMLManager {
     this.tables["done"]!.appendChild(this.htmlCurrentDoneBatch);
   }
 
-  public updatePending(batchNum: Number) {
+  public updatePending(batchNum: Number, currentBatch: Number) {
+    this.workingSpecs["currentBatch"]!.textContent = `${currentBatch}`;
     this.workingSpecs["pendingBatches"]!.textContent = `${batchNum}`;
   }
 }

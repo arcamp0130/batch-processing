@@ -58,7 +58,7 @@ export default class BatchesManager {
     while (!this.batches.isEmpty()) {
       this.batchCount++;
 
-      HTMLManager.Instance.updatePending(batchesNum - this.batchCount);
+      HTMLManager.Instance.updatePending(batchesNum - this.batchCount, this.batchCount);
       HTMLManager.Instance.appendDoneBatch(this.batchCount);
 
       const auxBatch: Batch = this.batches.dequeue()!;
