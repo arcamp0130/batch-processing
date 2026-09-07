@@ -11,6 +11,7 @@ export default class HTMLManager {
 
   private batchCount: number = 0;
   private htmlCurrentBatch: HTMLElement | undefined;
+  public htmlCurrentDoneBatch: HTMLElement | undefined;
   private currentBatchTaskCount: number = 0;
   private currentBatch: Batch | null;
   private taskIds: number[] = [];
@@ -242,7 +243,7 @@ export default class HTMLManager {
     );
 
     this.globalTimerSub$ = this.globalTimer$.subscribe(
-      (count) => this.workingSpecs["totalTime"]!.textContent = `${count}`,
+      (count) => (this.workingSpecs["totalTime"]!.textContent = `${count}`),
     );
 
     BatchesManager.Instance.getControl();
@@ -269,27 +270,33 @@ export default class HTMLManager {
 
     const idSpan: HTMLElement = document.createElement("span");
     const operationSpan: HTMLElement = document.createElement("span");
+    const resultSpan: HTMLElement = document.createElement("span");
     const timeSpan: HTMLElement = document.createElement("span");
 
     idSpan.textContent = `${task.id}`;
     operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
     timeSpan.textContent = `${task.time} s`;
+    if (task.answer) {
+      if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
+      resultSpan.textContent = task.answer;
+    }
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
+    if (task.answer) record.appendChild(resultSpan);
     record.appendChild(timeSpan);
 
     return record;
   }
 
-  private batchLayout(): HTMLElement {
+  private batchLayout(num?: Number): HTMLElement {
     const batch: HTMLElement = document.createElement("div");
     batch.classList.add("batch");
-    batch.id = `#batch-${this.batchCount}`;
+    batch.id = `#batch-${num ? `${num}-done` : this.batchCount}`;
 
     const header: HTMLElement = document.createElement("span");
     header.classList.add("header");
-    header.textContent = `Batch ${this.batchCount}`;
+    header.textContent = `Batch ${num ? num : this.batchCount}`;
 
     batch.appendChild(header);
 
@@ -313,13 +320,22 @@ export default class HTMLManager {
 
     this.taskTimer$ = interval(1000).pipe(
       startWith(0),
-      rxjsMap((val) => val + 1)
+      rxjsMap((val) => val + 1),
     );
     this.taskTimerSub$ = this.taskTimer$.subscribe(
-      (count) => this.workingTask["elapsedTime"]!.textContent = `${count}`
+      (count) => (this.workingTask["elapsedTime"]!.textContent = `${count}`),
     );
-    
+
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
+  }
+
+  public updateDoneTask(task: Task) {
+    this.htmlCurrentDoneBatch!.appendChild(this.batchRecord(task));
+  }
+
+  public appendDoneBatch(num: Number) {
+    this.htmlCurrentDoneBatch = this.batchLayout(num);
+    this.tables["done"]!.appendChild(this.htmlCurrentDoneBatch);
   }
 
   public updatePending(batchNum: Number) {

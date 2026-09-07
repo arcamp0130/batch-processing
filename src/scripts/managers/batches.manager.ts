@@ -33,8 +33,9 @@ export default class BatchesManager {
 
     while (!this.batches.isEmpty()) {
       this.batchCount++;
-      console.log(this.batches.size);
+      
       HTMLManager.Instance.updatePending(batchesNum - this.batchCount);
+      HTMLManager.Instance.appendDoneBatch(this.batchCount);
 
       const auxBatch: Batch = this.batches.dequeue()!;
 
@@ -50,8 +51,10 @@ export default class BatchesManager {
         HTMLManager.Instance.screenUpdateCurrent(currentTask, this.batchCount);
         await sleep(currentTask.time * 1000);
         HTMLManager.Instance.taskTimerSub$!.unsubscribe();
+
+        currentTask.answer = "ERROR";
+        HTMLManager.Instance.updateDoneTask(currentTask);
       }
-      console.log("End of tasks");
     }
     HTMLManager.Instance.globalTimerSub$!.unsubscribe();
   }
