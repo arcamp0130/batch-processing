@@ -24,6 +24,30 @@ export default class BatchesManager {
     this.batches = new Queue<Batch>();
   }
 
+  private solveTask(task: Task): string {
+    let answer: string = "ERROR";
+
+    switch (task.operation) {
+      case "add":
+        answer = `${task.operand1 + task.operand2}`;
+        break;
+      case "substract":
+        answer = `${task.operand1 - task.operand2}`;
+        break;
+      case "multiply":
+        answer = `${task.operand1 * task.operand2}`;
+        break;
+      case "divide":
+        if (task.operand2 !== 0) answer = `${task.operand1 / task.operand2}`;
+        break;
+      case "module":
+        if (task.operand2 !== 0) answer = `${task.operand1 % task.operand2}`;
+        break;
+    }
+
+    return answer;
+  }
+
   public recieveBatch(batch: Batch): void {
     this.batches.enqueue(batch);
   }
@@ -33,7 +57,7 @@ export default class BatchesManager {
 
     while (!this.batches.isEmpty()) {
       this.batchCount++;
-      
+
       HTMLManager.Instance.updatePending(batchesNum - this.batchCount);
       HTMLManager.Instance.appendDoneBatch(this.batchCount);
 
@@ -52,7 +76,7 @@ export default class BatchesManager {
         await sleep(currentTask.time * 1000);
         HTMLManager.Instance.taskTimerSub$!.unsubscribe();
 
-        currentTask.answer = "ERROR";
+        currentTask.answer = this.solveTask(currentTask);
         HTMLManager.Instance.updateDoneTask(currentTask);
       }
     }
