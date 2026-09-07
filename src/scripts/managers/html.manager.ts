@@ -22,6 +22,8 @@ export default class HTMLManager {
   private readonly noJobsSpan: HTMLElement | null;
   private readonly previewTable: HTMLElement | null;
 
+  private readonly devNameSpan: HTMLElement | null;
+
   // singleton design pattern
   public static get Instance(): HTMLManager {
     if (!HTMLManager.insance) {
@@ -62,6 +64,8 @@ export default class HTMLManager {
     this.previewTable = document.querySelector(
       "div.preview.container div.table",
     );
+
+    this.devNameSpan = document.querySelector("span#work-name");
 
     this.currentBatch = null;
 
@@ -202,17 +206,18 @@ export default class HTMLManager {
     this.hideError();
 
     if (this.batchCount == 0) {
-      this.showError("What did you do?", "There are no batches to send")
+      this.showError("What did you do?", "There are no batches to send");
       return;
     }
 
     this.sendBatch();
 
-    this.displays["input"]!.style.display = 'none'
-    this.displays["process"]!.style.display = 'grid'
+    this.displays["input"]!.style.display = "none";
+    this.displays["process"]!.style.display = "grid";
+    this.titleDisplay!.textContent = "Processing";
+    this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
-    BatchesManager.Instance.getControl()
-
+    BatchesManager.Instance.getControl();
   }
 
   private addListeners(): void {
