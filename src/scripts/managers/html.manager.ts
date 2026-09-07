@@ -100,7 +100,6 @@ export default class HTMLManager {
 
   private clearForm(): void {
     this.hideError();
-    this.inputs["username"]!.value = "";
     this.inputs["processId"]!.value = "";
     this.inputs["operand1"]!.value = "";
     this.inputs["operand2"]!.value = "";
@@ -220,6 +219,7 @@ export default class HTMLManager {
 
     this.taskIds.push(+this.inputs["processId"]!.value);
     this.htmlCurrentBatch!.appendChild(newRecord);
+    this.clearForm();
   }
 
   private startProcessing(): void {
