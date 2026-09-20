@@ -1,3 +1,9 @@
-import './sass/style.scss'
+import  "@sass/style.scss";
+import { BatchesManager, HTMLManager } from "@managers/index";
 
-console.log("Hello from typescript!");
+function initApp(): void {
+    HTMLManager.Instance;
+    BatchesManager.Instance;
+}
+
+initApp();
