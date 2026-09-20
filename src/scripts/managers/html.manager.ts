@@ -317,7 +317,7 @@ export default class HTMLManager {
     return task;
   }
 
-  private generateTasks(): void {
+  private async generateTasks(): Promise<void> {
     this.hideError();
 
     if (
@@ -332,7 +332,12 @@ export default class HTMLManager {
       return;
     }
 
-    console.log("Good data!");
+    let i = 0;
+    while (i < +this.inputs["autoAmount"]!.value) {
+      this.appendTask(this.randomTask);
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      i++;
+    }
   }
 
   private addListeners(): void {
