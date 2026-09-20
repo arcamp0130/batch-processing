@@ -108,6 +108,20 @@ main {
       text-align: left;
     }
   }
+
+  .state {
+    &[done] {
+      color: scheme.$foreground-done;
+      background-color: scheme.$background-done;
+    }
+
+    color: scheme.$foreground-color;
+    background-color: scheme.$background-color;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    font-size: 1.2rem;
+  }
 }
 
 .done > .table {

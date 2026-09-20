@@ -32,9 +32,10 @@ export default class HTMLManager {
   private readonly tables: { [key: string]: HTMLElement | null };
   private readonly workingTask: { [key: string]: HTMLElement | null };
   private readonly workingSpecs: { [key: string]: HTMLElement | null };
-
+  
   private readonly noJobsSpan: HTMLElement | null;
   private readonly devNameSpan: HTMLElement | null;
+  private readonly stateDisplay: HTMLElement | null; 
 
   // singleton design pattern
   public static get Instance(): HTMLManager {
@@ -96,6 +97,7 @@ export default class HTMLManager {
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
+    this.stateDisplay = document.querySelector("div.working div.state")
 
     this.currentBatch = null;
 
