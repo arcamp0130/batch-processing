@@ -217,20 +217,6 @@ export default class HTMLManager {
   }
 
   private appendTask(task: Task): void {
-    const newRecord = this.batchRecord(task);
-
-    this.timeSum += task.time;
-
-    this.currentBatch?.enqueue(task);
-
-    this.taskIds.push(task.id);
-    this.htmlCurrentBatch!.appendChild(newRecord);
-  }
-
-  private buildTask(): void {
-    this.hideError();
-    if (!this.goodData()) return;
-
     if (this.batchCount === 0) {
       this.noJobsSpan!.style.display = "none";
       this.tables["preview"]!.style.display = "block";
@@ -244,6 +230,20 @@ export default class HTMLManager {
     }
 
     this.currentBatchTaskCount++;
+
+    const newRecord = this.batchRecord(task);
+
+    this.timeSum += task.time;
+
+    this.currentBatch?.enqueue(task);
+
+    this.taskIds.push(task.id);
+    this.htmlCurrentBatch!.appendChild(newRecord);
+  }
+
+  private buildTask(): void {
+    this.hideError();
+    if (!this.goodData()) return;
 
     const newTask: Task = {
       id: +this.inputs["processId"]!.value,
