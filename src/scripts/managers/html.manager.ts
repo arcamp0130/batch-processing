@@ -64,7 +64,7 @@ export default class HTMLManager {
       operand2: document.querySelector("input#operand2"),
       operation: document.querySelector("select#operation-type"),
       estimatedTime: document.querySelector("input#JTL"),
-      autoAmount: document.querySelector("input#auto-amount")
+      autoAmount: document.querySelector("input#auto-amount"),
     };
 
     this.buttons = {
@@ -212,7 +212,18 @@ export default class HTMLManager {
     this.currentBatch = new Queue<Task>();
   }
 
-  private addTask(): void {
+  private appendTask(task: Task): void {
+    const newRecord = this.batchRecord(task);
+
+    this.timeSum += task.time;
+
+    this.currentBatch?.enqueue(task);
+
+    this.taskIds.push(task.id);
+    this.htmlCurrentBatch!.appendChild(newRecord);
+  }
+
+  private buildTask(): void {
     this.hideError();
     if (!this.goodData()) return;
 
@@ -237,14 +248,8 @@ export default class HTMLManager {
       operand2: +this.inputs["operand2"]!.value,
       time: +this.inputs["estimatedTime"]!.value,
     };
-    const newRecord = this.batchRecord(newTask);
 
-    this.timeSum += +this.inputs["estimatedTime"]!.value;
-
-    this.currentBatch?.enqueue(newTask);
-
-    this.taskIds.push(+this.inputs["processId"]!.value);
-    this.htmlCurrentBatch!.appendChild(newRecord);
+    this.appendTask(newTask);
     this.clearForm();
   }
 
@@ -294,20 +299,17 @@ export default class HTMLManager {
     }
 
     console.log("Good data!");
-
   }
 
   private addListeners(): void {
-    document.addEventListener("keydown", (event) => {
-      if (event.key == "Enter") this.addTask();
-    });
-
     this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
-    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
+    this.buttons["addJob"]!.addEventListener("click", () => this.buildTask());
     this.buttons["start"]!.addEventListener("click", () =>
       this.startProcessing(),
     );
-    this.buttons["autoGenTasks"]!.addEventListener("click", () => this.generateTasks());
+    this.buttons["autoGenTasks"]!.addEventListener("click", () =>
+      this.generateTasks(),
+    );
 
     this.autoGenCheck!.addEventListener("change", () => {
       if (this.autoGenCheck!.checked) {
