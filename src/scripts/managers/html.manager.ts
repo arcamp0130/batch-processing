@@ -35,6 +35,9 @@ export default class HTMLManager {
   private readonly workingTask: { [key: string]: HTMLElement | null };
   private readonly workingSpecs: { [key: string]: HTMLElement | null };
   private readonly stateMessage: { [key: string]: HTMLElement | null };
+  private readonly forms: { [key: string]: HTMLElement | null };
+
+  private readonly autoGenCheck: HTMLInputElement | null;
 
   private readonly noJobsSpan: HTMLElement | null;
   private readonly devNameSpan: HTMLElement | null;
@@ -101,6 +104,13 @@ export default class HTMLManager {
       element: document.querySelector("div.working div.state"),
       text: document.querySelector("div.state span#state-message"),
     };
+
+    this.forms = {
+      manual: document.querySelector("div.form div.manual"),
+      auto: document.querySelector("div.form div.manual"),
+    };
+
+    this.autoGenCheck = document.querySelector("input#auto-gen");
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
