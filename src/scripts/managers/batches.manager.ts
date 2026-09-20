@@ -81,5 +81,6 @@ export default class BatchesManager {
       }
     }
     HTMLManager.Instance.globalTimerSub$!.unsubscribe();
+    HTMLManager.Instance.setDone();
   }
 }

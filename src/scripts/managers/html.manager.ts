@@ -32,10 +32,10 @@ export default class HTMLManager {
   private readonly tables: { [key: string]: HTMLElement | null };
   private readonly workingTask: { [key: string]: HTMLElement | null };
   private readonly workingSpecs: { [key: string]: HTMLElement | null };
-  
+  private readonly stateMessage: { [key: string]: HTMLElement | null };
+
   private readonly noJobsSpan: HTMLElement | null;
   private readonly devNameSpan: HTMLElement | null;
-  private readonly stateDisplay: HTMLElement | null; 
 
   // singleton design pattern
   public static get Instance(): HTMLManager {
@@ -95,9 +95,13 @@ export default class HTMLManager {
       currentBatch: document.querySelector("span#work-current-batch"),
     };
 
+    this.stateMessage = {
+      element: document.querySelector("div.working div.state"),
+      text: document.querySelector("div.state span#state-message"),
+    };
+
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
-    this.stateDisplay = document.querySelector("div.working div.state")
 
     this.currentBatch = null;
 
@@ -253,7 +257,8 @@ export default class HTMLManager {
 
     this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
       this.workingSpecs["totalTime"]!.textContent = `${count}`;
-      this.workingSpecs["remainingTime"]!.textContent = `${this.timeSum - count}`
+      this.workingSpecs["remainingTime"]!.textContent =
+        `${this.timeSum - count}`;
     });
 
     BatchesManager.Instance.getControl();
@@ -351,5 +356,10 @@ export default class HTMLManager {
   public updatePending(batchNum: Number, currentBatch: Number) {
     this.workingSpecs["currentBatch"]!.textContent = `${currentBatch}`;
     this.workingSpecs["pendingBatches"]!.textContent = `${batchNum}`;
+  }
+
+  public setDone() {
+    this.stateMessage["element"]!.setAttribute("done", "");
+    this.stateMessage["text"]!.textContent = "Finished!";
   }
 }
