@@ -17,6 +17,8 @@ export default class HTMLManager {
   private taskIds: number[] = [];
   private timeSum: number = 0;
 
+  public static msClockSpeed: number = 500;
+
   private globalTimer$: Observable<number> | undefined = undefined;
   private taskTimer$: Observable<number> | undefined = undefined;
 
@@ -250,7 +252,7 @@ export default class HTMLManager {
     this.titleDisplay!.textContent = "Processing";
     this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
-    this.globalTimer$ = interval(1000).pipe(
+    this.globalTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
       rxjsMap((val) => val + 1),
     );
@@ -290,7 +292,7 @@ export default class HTMLManager {
 
     idSpan.textContent = `${task.id}`;
     operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
-    timeSpan.textContent = `${task.time} s`;
+    timeSpan.textContent = `${task.time}`;
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
@@ -333,7 +335,7 @@ export default class HTMLManager {
     this.workingTask["job"]!.textContent =
       `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
 
-    this.taskTimer$ = interval(1000).pipe(
+    this.taskTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
       rxjsMap((val) => val + 1),
     );
