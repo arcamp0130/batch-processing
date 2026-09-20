@@ -107,7 +107,7 @@ export default class HTMLManager {
 
     this.forms = {
       manual: document.querySelector("div.form div.manual"),
-      auto: document.querySelector("div.form div.manual"),
+      auto: document.querySelector("div.form div.auto"),
     };
 
     this.autoGenCheck = document.querySelector("input#auto-gen");
