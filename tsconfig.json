@@ -8,6 +8,7 @@
     "paths": {
         "@sass/*": ["./src/scripts/sass/*"],
         "@managers/index": ["./src/scripts/managers/managers.index.ts"],
+        "@structures/index": ["./src/scripts/structures/structures.index.ts"],
         "@types/*":["./src/scripts/types/*"]
     },
 
