@@ -271,7 +271,14 @@ export default class HTMLManager {
     this.displays["process"]!.style.display = "grid";
     this.workingSpecs["totalEstimatedTime"]!.textContent = `${this.timeSum}`;
     this.titleDisplay!.textContent = "Processing";
-    this.devNameSpan!.textContent = this.inputs["username"]!.value;
+
+    if (this.autoGenCheck!.checked) {
+      const devName: HTMLElement | null =
+        document.querySelector("div.dev-name");
+      devName!.style.display = "none";
+    } else {
+      this.devNameSpan!.textContent = this.inputs["username"]!.value;
+    }
 
     this.globalTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
@@ -335,7 +342,7 @@ export default class HTMLManager {
     let i = 0;
     while (i < +this.inputs["autoAmount"]!.value) {
       this.appendTask(this.randomTask);
-      await new Promise((resolve) => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 10));
       i++;
     }
   }
