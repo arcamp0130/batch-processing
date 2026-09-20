@@ -285,6 +285,15 @@ export default class HTMLManager {
     this.buttons["start"]!.addEventListener("click", () =>
       this.startProcessing(),
     );
+    this.autoGenCheck!.addEventListener("change", () => {
+      if (this.autoGenCheck!.checked) {
+        this.forms["manual"]!.style.display = "none";
+        this.forms["auto"]!.style.display = "block";
+      } else {
+        this.forms["manual"]!.style.display = "block";
+        this.forms["auto"]!.style.display = "none";
+      }
+    });
   }
 
   private init(): void {
