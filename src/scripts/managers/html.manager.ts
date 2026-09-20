@@ -1,4 +1,8 @@
-import { Operations, type OperationNames } from "../types/math.type";
+import {
+  OperationsSymbols,
+  type OperationNames,
+  operations,
+} from "../types/math.type";
 import { Queue } from "@structures/index";
 import { type Batch, type Task } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
@@ -283,6 +287,36 @@ export default class HTMLManager {
     BatchesManager.Instance.getControl();
   }
 
+  private randIntInRange(min: number, max: number): number {
+    const _min = Math.floor(min);
+    const _max = Math.floor(max);
+
+    return Math.floor(Math.random() * (_max - _min) + _min);
+  }
+
+  private get randomOperation(): OperationNames {
+    const index: number = Math.floor(Math.random() * operations.length);
+    return operations[index]!;
+  }
+
+  private get randomTask(): Task {
+    let randId: number;
+
+    do
+      randId = this.randIntInRange(1, 9999); // artibrary max value
+    while (this.taskIds.includes(randId));
+
+    const task: Task = {
+      id: randId,
+      operand1: this.randIntInRange(0, 99), // artibrary max value
+      operation: this.randomOperation,
+      operand2: this.randIntInRange(0, 99), // artibrary max value
+      time: this.randIntInRange(5, 20),
+    };
+
+    return task;
+  }
+
   private generateTasks(): void {
     this.hideError();
 
@@ -336,7 +370,7 @@ export default class HTMLManager {
     const timeSpan: HTMLElement = document.createElement("span");
 
     idSpan.textContent = `${task.id}`;
-    operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
+    operationSpan.textContent = `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
     timeSpan.textContent = `${task.time}`;
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
@@ -378,7 +412,7 @@ export default class HTMLManager {
     this.workingTask["batch"]!.textContent = `${batchNum}`;
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
-      `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
+      `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
 
     this.taskTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
