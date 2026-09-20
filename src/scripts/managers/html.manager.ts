@@ -17,6 +17,8 @@ export default class HTMLManager {
   private taskIds: number[] = [];
   private timeSum: number = 0;
 
+  public static msClockSpeed: number = 500;
+
   private globalTimer$: Observable<number> | undefined = undefined;
   private taskTimer$: Observable<number> | undefined = undefined;
 
@@ -32,6 +34,7 @@ export default class HTMLManager {
   private readonly tables: { [key: string]: HTMLElement | null };
   private readonly workingTask: { [key: string]: HTMLElement | null };
   private readonly workingSpecs: { [key: string]: HTMLElement | null };
+  private readonly stateMessage: { [key: string]: HTMLElement | null };
 
   private readonly noJobsSpan: HTMLElement | null;
   private readonly devNameSpan: HTMLElement | null;
@@ -92,6 +95,11 @@ export default class HTMLManager {
       remainingTime: document.querySelector("span#work-remaining-time"),
       pendingBatches: document.querySelector("span#work-pending-batches"),
       currentBatch: document.querySelector("span#work-current-batch"),
+    };
+
+    this.stateMessage = {
+      element: document.querySelector("div.working div.state"),
+      text: document.querySelector("div.state span#state-message"),
     };
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
@@ -244,14 +252,15 @@ export default class HTMLManager {
     this.titleDisplay!.textContent = "Processing";
     this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
-    this.globalTimer$ = interval(1000).pipe(
+    this.globalTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
       rxjsMap((val) => val + 1),
     );
 
     this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
       this.workingSpecs["totalTime"]!.textContent = `${count}`;
-      this.workingSpecs["remainingTime"]!.textContent = `${this.timeSum - count}`
+      this.workingSpecs["remainingTime"]!.textContent =
+        `${this.timeSum - count}`;
     });
 
     BatchesManager.Instance.getControl();
@@ -283,7 +292,7 @@ export default class HTMLManager {
 
     idSpan.textContent = `${task.id}`;
     operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
-    timeSpan.textContent = `${task.time} s`;
+    timeSpan.textContent = `${task.time}`;
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
@@ -326,7 +335,7 @@ export default class HTMLManager {
     this.workingTask["job"]!.textContent =
       `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
 
-    this.taskTimer$ = interval(1000).pipe(
+    this.taskTimer$ = interval(HTMLManager.msClockSpeed).pipe(
       startWith(0),
       rxjsMap((val) => val + 1),
     );
@@ -349,5 +358,10 @@ export default class HTMLManager {
   public updatePending(batchNum: Number, currentBatch: Number) {
     this.workingSpecs["currentBatch"]!.textContent = `${currentBatch}`;
     this.workingSpecs["pendingBatches"]!.textContent = `${batchNum}`;
+  }
+
+  public setDone() {
+    this.stateMessage["element"]!.setAttribute("done", "");
+    this.stateMessage["text"]!.textContent = "Finished!";
   }
 }

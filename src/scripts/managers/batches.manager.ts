@@ -73,7 +73,7 @@ export default class BatchesManager {
         const currentTask: Task = this.currentBatch.dequeue()!;
         HTMLManager.Instance.screenDequeue();
         HTMLManager.Instance.screenUpdateCurrent(currentTask, this.batchCount);
-        await sleep(currentTask.time * 1000);
+        await sleep(currentTask.time * HTMLManager.msClockSpeed);
         HTMLManager.Instance.taskTimerSub$!.unsubscribe();
 
         currentTask.answer = this.solveTask(currentTask);
@@ -81,5 +81,6 @@ export default class BatchesManager {
       }
     }
     HTMLManager.Instance.globalTimerSub$!.unsubscribe();
+    HTMLManager.Instance.setDone();
   }
 }
