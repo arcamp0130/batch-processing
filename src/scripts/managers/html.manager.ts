@@ -64,12 +64,14 @@ export default class HTMLManager {
       operand2: document.querySelector("input#operand2"),
       operation: document.querySelector("select#operation-type"),
       estimatedTime: document.querySelector("input#JTL"),
+      autoAmount: document.querySelector("input#auto-amount")
     };
 
     this.buttons = {
       clear: document.querySelector("button#clear-form"),
       addJob: document.querySelector("button#add-job"),
       start: document.querySelector("button#start"),
+      autoGenTasks: document.querySelector("button#auto-gen-tasks"),
     };
 
     this.alert = {
@@ -276,15 +278,37 @@ export default class HTMLManager {
     BatchesManager.Instance.getControl();
   }
 
+  private generateTasks(): void {
+    this.hideError();
+
+    if (
+      this.inputs["autoAmount"]!.value == "" || // empty
+      isNaN(+this.inputs["autoAmount"]!.value) || // NaN
+      +this.inputs["autoAmount"]!.value <= 0 // <= 0
+    ) {
+      this.showError(
+        "What should I do?",
+        "You forgot or incorrectly wrote the tasks amount to generate",
+      );
+      return;
+    }
+
+    console.log("Good data!");
+
+  }
+
   private addListeners(): void {
-    this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
-    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
     document.addEventListener("keydown", (event) => {
       if (event.key == "Enter") this.addTask();
     });
+
+    this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
+    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
     this.buttons["start"]!.addEventListener("click", () =>
       this.startProcessing(),
     );
+    this.buttons["autoGenTasks"]!.addEventListener("click", () => this.generateTasks());
+
     this.autoGenCheck!.addEventListener("change", () => {
       if (this.autoGenCheck!.checked) {
         this.forms["manual"]!.style.display = "none";
