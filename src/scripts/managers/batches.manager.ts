@@ -1,5 +1,5 @@
 import { Queue } from "@structures/index";
-import { type Batch, type Task } from "../types/processing.type";
+import { type Batch, type Task, type TaskInterruption } from "../types/processing.type";
 import HTMLManager from "./html.manager";
 
 export default class BatchesManager {
@@ -62,7 +62,7 @@ export default class BatchesManager {
       while (!auxBatch.isEmpty()) {
         const currentTask: Task = auxBatch.dequeue()!;
         currentTask.elapsed = 0;
-        
+
         HTMLManager.Instance.screenEnqueue(currentTask);
         this.currentBatch.enqueue(currentTask);
       }
@@ -70,18 +70,26 @@ export default class BatchesManager {
       while (!this.currentBatch.isEmpty()) {
         const currentTask: Task = this.currentBatch.dequeue()!;
         HTMLManager.Instance.screenDequeue();
-        const startTime: number = Date.now();
-        const exitWithError = await HTMLManager.Instance.screenUpdateCurrent(
+        const interrupt: TaskInterruption = await HTMLManager.Instance.screenUpdateCurrent(
           currentTask,
           this.batchCount,
         );
 
-        const elapsedTime: number // Get elapsed ticks since task launch
-          = Math.round((Date.now() - startTime) / HTMLManager.msClockSpeed);
+        if (interrupt == "err") {
+          currentTask.answer = "ERROR"
+          HTMLManager.Instance.updateDoneTask(currentTask);
+        }
 
-        currentTask.answer = exitWithError ? "ERROR" : this.solveTask(currentTask);
-        currentTask.elapsed = elapsedTime;
-        HTMLManager.Instance.updateDoneTask(currentTask);
+        if (interrupt == "inOut") {
+          this.currentBatch.enqueue(currentTask);
+          HTMLManager.Instance.screenEnqueue(currentTask);
+        }
+
+        if (interrupt == "none") {
+          currentTask.answer = this.solveTask(currentTask);
+          HTMLManager.Instance.updateDoneTask(currentTask);
+        }
+
       }
     }
     HTMLManager.Instance.globalTimerSub$!.unsubscribe();

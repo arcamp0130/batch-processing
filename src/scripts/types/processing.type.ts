@@ -11,4 +11,6 @@ export type Task = {
   answer?: string;
 };
 
+export type TaskInterruption = "inOut" | "err" | "none";
+
 export type Batch = Queue<Task>;
