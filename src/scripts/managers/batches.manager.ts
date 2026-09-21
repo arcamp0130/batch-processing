@@ -68,12 +68,17 @@ export default class BatchesManager {
       while (!this.currentBatch.isEmpty()) {
         const currentTask: Task = this.currentBatch.dequeue()!;
         HTMLManager.Instance.screenDequeue();
-        await HTMLManager.Instance.screenUpdateCurrent(
+        const startTime: number = Date.now();
+        const exitWithError = await HTMLManager.Instance.screenUpdateCurrent(
           currentTask,
           this.batchCount,
         );
 
-        currentTask.answer = this.solveTask(currentTask);
+        const elapsedTime: number // Get elapsed ticks since task launch
+          = Math.round((Date.now() - startTime) / HTMLManager.msClockSpeed);
+
+        currentTask.answer = exitWithError ? "ERROR" : this.solveTask(currentTask);
+        currentTask.elapsed = elapsedTime;
         HTMLManager.Instance.updateDoneTask(currentTask);
       }
     }

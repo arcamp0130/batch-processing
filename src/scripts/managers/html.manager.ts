@@ -27,6 +27,7 @@ export default class HTMLManager {
 
   public globalTimerSub$: Subscription | undefined = undefined;
   public taskTimerSub$: Subscription | undefined = undefined;
+  private finishCurrentTask: ((exitWithError: boolean) => void) | undefined;
 
   private readonly titleDisplay: HTMLElement | null;
 
@@ -256,14 +257,18 @@ export default class HTMLManager {
     this.clearForm();
   }
 
-  private analyzeKey(e: KeyboardEvent): void {
+  private analyzeKey = (e: KeyboardEvent): void => {
     switch (e.key) {
       case 'E': case 'e':
         console.log("I/O interruption - re-enqueue");
         break;
 
       case 'W': case 'w':
-        console.log("End current task with error");
+        if (this.finishCurrentTask) {
+          this.taskTimerSub$?.unsubscribe();
+          this.finishCurrentTask(true);
+          this.finishCurrentTask = undefined;
+        }
         break;
 
       case 'P': case 'p':
@@ -274,7 +279,7 @@ export default class HTMLManager {
         console.log("Resuming processor - no effect if wasn't paused");
         break;
     }
-  }
+  };
 
   private startProcessing(): void {
     this.hideError();
@@ -406,6 +411,7 @@ export default class HTMLManager {
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
+      timeSpan.textContent = `${task.elapsed}`
     }
 
     record.appendChild(idSpan);
@@ -439,7 +445,7 @@ export default class HTMLManager {
     this.tables["queue"]!.appendChild(this.batchRecord(task));
   }
 
-  public screenUpdateCurrent(task: Task, batchNum: number): Promise<void> {
+  public screenUpdateCurrent(task: Task, batchNum: number): Promise<boolean> {
     this.workingTask["batch"]!.textContent = `${batchNum}`;
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
@@ -454,12 +460,16 @@ export default class HTMLManager {
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
 
     return new Promise((resolve) => {
+      this.finishCurrentTask = resolve;
       this.taskTimerSub$ = taskTimer.subscribe({
         next: (elapsedTicks) => {
           task.elapsed = elapsed + elapsedTicks;
           this.workingTask["elapsedTime"]!.textContent = `${task.elapsed}`;
         },
-        complete: resolve,
+        complete: () => {
+          this.finishCurrentTask = undefined;
+          resolve(false);
+        },
       });
     });
   }
