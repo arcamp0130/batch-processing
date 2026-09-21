@@ -256,6 +256,26 @@ export default class HTMLManager {
     this.clearForm();
   }
 
+  private analyzeKey(e: KeyboardEvent): void {
+    switch (e.key) {
+      case 'E': case 'e':
+        console.log("I/O interruption - re-enqueue");
+        break;
+
+      case 'W': case 'w':
+        console.log("End current task with error");
+        break;
+
+      case 'P': case 'p':
+        console.log("Pause processor - awating for C/c to resume");
+        break;
+
+      case 'C': case 'c':
+        console.log("Resuming processor - no effect if wasn't paused");
+        break;
+    }
+  }
+
   private startProcessing(): void {
     this.hideError();
 
@@ -289,6 +309,7 @@ export default class HTMLManager {
         `${this.timeSum - count}`;
     });
 
+    document.addEventListener("keydown", this.analyzeKey)
     BatchesManager.Instance.getControl();
   }
 
@@ -460,5 +481,6 @@ export default class HTMLManager {
   public setDone() {
     this.stateMessage["element"]!.setAttribute("done", "");
     this.stateMessage["text"]!.textContent = "Finished!";
+    document.removeEventListener("keydown", this.analyzeKey);
   }
 }
