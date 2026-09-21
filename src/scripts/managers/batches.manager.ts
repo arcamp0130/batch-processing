@@ -61,6 +61,8 @@ export default class BatchesManager {
 
       while (!auxBatch.isEmpty()) {
         const currentTask: Task = auxBatch.dequeue()!;
+        currentTask.elapsed = 0;
+        
         HTMLManager.Instance.screenEnqueue(currentTask);
         this.currentBatch.enqueue(currentTask);
       }

@@ -411,8 +411,10 @@ export default class HTMLManager {
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
-      timeSpan.textContent = `${task.elapsed}`
     }
+
+    if (task.elapsed !== undefined) 
+      timeSpan.textContent = `${task.elapsed}`
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
