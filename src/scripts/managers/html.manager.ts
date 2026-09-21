@@ -7,8 +7,8 @@ import { Queue } from "@structures/index";
 import { type Batch, type Task } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
 
-import { interval, Observable, Subscription } from "rxjs";
-import { map as rxjsMap, startWith } from "rxjs/operators";
+import { Observable, Subscription, timer } from "rxjs";
+import { take } from "rxjs/operators";
 
 export default class HTMLManager {
   private static insance: HTMLManager;
@@ -24,7 +24,6 @@ export default class HTMLManager {
   public static msClockSpeed: number = 500;
 
   private globalTimer$: Observable<number> | undefined = undefined;
-  private taskTimer$: Observable<number> | undefined = undefined;
 
   public globalTimerSub$: Subscription | undefined = undefined;
   public taskTimerSub$: Subscription | undefined = undefined;
@@ -280,9 +279,8 @@ export default class HTMLManager {
       this.devNameSpan!.textContent = this.inputs["username"]!.value;
     }
 
-    this.globalTimer$ = interval(HTMLManager.msClockSpeed).pipe(
-      startWith(0),
-      rxjsMap((val) => val + 1),
+    this.globalTimer$ = timer(0, HTMLManager.msClockSpeed).pipe(
+      take(this.timeSum + 1),
     );
 
     this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
@@ -420,21 +418,29 @@ export default class HTMLManager {
     this.tables["queue"]!.appendChild(this.batchRecord(task));
   }
 
-  public screenUpdateCurrent(task: Task, batchNum: number) {
+  public screenUpdateCurrent(task: Task, batchNum: number): Promise<void> {
     this.workingTask["batch"]!.textContent = `${batchNum}`;
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
       `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
 
-    this.taskTimer$ = interval(HTMLManager.msClockSpeed).pipe(
-      startWith(0),
-      rxjsMap((val) => val + 1),
+    const elapsed = task.elapsed ?? 0;
+    const taskTimer = timer(0, HTMLManager.msClockSpeed).pipe(
+      take(task.time - elapsed + 1),
     );
-    this.taskTimerSub$ = this.taskTimer$.subscribe(
-      (count) => (this.workingTask["elapsedTime"]!.textContent = `${count}`),
-    );
+    this.workingTask["elapsedTime"]!.textContent = `${elapsed}`;
 
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
+
+    return new Promise((resolve) => {
+      this.taskTimerSub$ = taskTimer.subscribe({
+        next: (elapsedTicks) => {
+          task.elapsed = elapsed + elapsedTicks;
+          this.workingTask["elapsedTime"]!.textContent = `${task.elapsed}`;
+        },
+        complete: resolve,
+      });
+    });
   }
 
   public updateDoneTask(task: Task) {
