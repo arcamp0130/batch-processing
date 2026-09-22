@@ -4,7 +4,7 @@ import {
   operations,
 } from "../types/math.type";
 import { Queue } from "@structures/index";
-import { type Batch, type Task } from "../types/processing.type";
+import { type Batch, type Task, type TaskInterruption } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
 
 import { Observable, Subscription, timer } from "rxjs";
@@ -20,6 +20,8 @@ export default class HTMLManager {
   private currentBatch: Batch | null;
   private taskIds: number[] = [];
   private timeSum: number = 0;
+  private globalElapsed: number = 0;
+  private paused: boolean = false;
 
   public static msClockSpeed: number = 500;
 
@@ -27,6 +29,9 @@ export default class HTMLManager {
 
   public globalTimerSub$: Subscription | undefined = undefined;
   public taskTimerSub$: Subscription | undefined = undefined;
+  private interruptedTask: ((exitWithError: TaskInterruption) => void) | undefined;
+  private resumeTaskTimer: (() => void) | undefined;
+
 
   private readonly titleDisplay: HTMLElement | null;
 
@@ -100,7 +105,7 @@ export default class HTMLManager {
     this.workingSpecs = {
       totalTime: document.querySelector("span#work-total-elapsed-time"),
       totalEstimatedTime: document.querySelector("span#work-total-time"),
-      remainingTime: document.querySelector("span#work-remaining-time"),
+      // remainingTime: document.querySelector("span#work-remaining-time"),
       pendingBatches: document.querySelector("span#work-pending-batches"),
       currentBatch: document.querySelector("span#work-current-batch"),
     };
@@ -256,6 +261,44 @@ export default class HTMLManager {
     this.clearForm();
   }
 
+  private analyzeKey = (e: KeyboardEvent): void => {
+    switch (e.key) {
+      case 'E': case 'e':
+        if (this.interruptedTask && !this.paused) {
+          this.taskTimerSub$?.unsubscribe();
+          this.interruptedTask("inOut");
+          this.interruptedTask = undefined;
+        }
+        break;
+
+      case 'W': case 'w':
+        if (this.interruptedTask && !this.paused) {
+          this.taskTimerSub$?.unsubscribe();
+          this.interruptedTask("err");
+          this.interruptedTask = undefined;
+        }
+        break;
+
+      case 'P': case 'p':
+        if (this.interruptedTask && !this.paused) {
+          this.paused = true;
+          this.taskTimerSub$?.unsubscribe();
+          this.globalTimerSub$?.unsubscribe();
+          this.stateMessage["text"]!.textContent = "Paused";
+        }
+        break;
+
+      case 'C': case 'c':
+        if (this.paused) {
+          this.paused = false;
+          this.startGlobalTimer(true);
+          this.resumeTaskTimer?.();
+          this.stateMessage["text"]!.textContent = "Processing";
+        }
+        break;
+    }
+  };
+
   private startProcessing(): void {
     this.hideError();
 
@@ -279,16 +322,10 @@ export default class HTMLManager {
       this.devNameSpan!.textContent = this.inputs["username"]!.value;
     }
 
-    this.globalTimer$ = timer(0, HTMLManager.msClockSpeed).pipe(
-      take(this.timeSum + 1),
-    );
+    this.globalElapsed = 0;
+    this.startGlobalTimer(false);
 
-    this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
-      this.workingSpecs["totalTime"]!.textContent = `${count}`;
-      this.workingSpecs["remainingTime"]!.textContent =
-        `${this.timeSum - count}`;
-    });
-
+    document.addEventListener("keydown", this.analyzeKey)
     BatchesManager.Instance.getControl();
   }
 
@@ -370,6 +407,17 @@ export default class HTMLManager {
     this.addListeners();
   }
 
+  private startGlobalTimer(resume: boolean): void {
+    const elapsedBeforeResume = this.globalElapsed;
+    const initialDelay = resume ? HTMLManager.msClockSpeed : 0;
+
+    this.globalTimer$ = timer(initialDelay, HTMLManager.msClockSpeed);
+    this.globalTimerSub$ = this.globalTimer$.subscribe((ticks) => {
+      this.globalElapsed = resume ? elapsedBeforeResume + ticks + 1 : ticks;
+      this.workingSpecs["totalTime"]!.textContent = `${this.globalElapsed}`;
+    });
+  }
+
   private batchRecord(task: Task): HTMLElement {
     const record: HTMLElement = document.createElement("div");
     record.classList.add("record");
@@ -386,6 +434,9 @@ export default class HTMLManager {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
     }
+
+    if (task.elapsed !== undefined) 
+      timeSpan.textContent = `${task.elapsed}`
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
@@ -418,28 +469,36 @@ export default class HTMLManager {
     this.tables["queue"]!.appendChild(this.batchRecord(task));
   }
 
-  public screenUpdateCurrent(task: Task, batchNum: number): Promise<void> {
+  public screenUpdateCurrent(task: Task, batchNum: number): Promise<TaskInterruption> {
     this.workingTask["batch"]!.textContent = `${batchNum}`;
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
       `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
 
-    const elapsed = task.elapsed ?? 0;
-    const taskTimer = timer(0, HTMLManager.msClockSpeed).pipe(
-      take(task.time - elapsed + 1),
-    );
-    this.workingTask["elapsedTime"]!.textContent = `${elapsed}`;
-
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
 
     return new Promise((resolve) => {
-      this.taskTimerSub$ = taskTimer.subscribe({
-        next: (elapsedTicks) => {
-          task.elapsed = elapsed + elapsedTicks;
-          this.workingTask["elapsedTime"]!.textContent = `${task.elapsed}`;
-        },
-        complete: resolve,
-      });
+      this.interruptedTask = resolve;
+      this.resumeTaskTimer = (): void => {
+        const elapsed = task.elapsed ?? 0;
+        const taskTimer = timer(0, HTMLManager.msClockSpeed).pipe(
+          take(task.time - elapsed + 1),
+        );
+        this.workingTask["elapsedTime"]!.textContent = `${elapsed}`;
+
+        this.taskTimerSub$ = taskTimer.subscribe({
+          next: (elapsedTicks) => {
+            task.elapsed = elapsed + elapsedTicks;
+            this.workingTask["elapsedTime"]!.textContent = `${task.elapsed}`;
+          },
+          complete: () => {
+            this.resumeTaskTimer = undefined;
+            this.interruptedTask = undefined;
+            resolve("none");
+          },
+        });
+      };
+      this.resumeTaskTimer();
     });
   }
 
@@ -458,7 +517,10 @@ export default class HTMLManager {
   }
 
   public setDone() {
+    this.resumeTaskTimer = undefined;
+    this.paused = false;
     this.stateMessage["element"]!.setAttribute("done", "");
     this.stateMessage["text"]!.textContent = "Finished!";
+    document.removeEventListener("keydown", this.analyzeKey);
   }
 }
