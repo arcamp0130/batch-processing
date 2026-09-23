@@ -7,7 +7,10 @@ export type Task = {
   operation: OperationNames;
   operand2: number;
   time: number;
+  elapsed?: number;
   answer?: string;
 };
+
+export type TaskInterruption = "inOut" | "err" | "none";
 
 export type Batch = Queue<Task>;

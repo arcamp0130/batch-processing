@@ -25,38 +25,54 @@
     <div class="panel">
       <div class="input">
         <div class="form container">
-          <h3>Dev data</h3>
-          <div class="field">
-            <label for="username">Enter your name</label>
-            <input type="text" id="username" placeholder="Name">
+          <div class="field use-auto">
+            <input type="checkbox" name="aute-gen" id="auto-gen">
+            <label for="auto-gen">Use task auto generation</label>
           </div>
           <hr>
-          <h3>Process info</h3>
-          <div class="field">
-            <label for="process-ID">ID</label>
-            <input type="number" name="process-ID" id="process-ID" min="1" placeholder="123">
-          </div>
-          <div class="field">
-            <span>Operands and operation</span>
-            <div class="operation">
-              <input type="number" name="operand1" id="operand1" placeholder="123">
-              <select name="operation-type" id="operation-type">
-                <option selected value="add">+</option>
-                <option value="substract">-</option>
-                <option value="multiply">x</option>
-                <option value="divide">/</option>
-                <option value="module">%</option>
-              </select>
-              <input type="number" name="operand2" id="operand2" placeholder="123">
+          <div class="manual">
+            <h3>Dev data</h3>
+            <div class="field">
+              <label for="username">Enter your name</label>
+              <input type="text" id="username" placeholder="Name">
+            </div>
+            <hr>
+            <h3>Process info</h3>
+            <div class="field">
+              <label for="process-ID">ID</label>
+              <input type="number" name="process-ID" id="process-ID" min="1" placeholder="123">
+            </div>
+            <div class="field">
+              <span>Operands and operation</span>
+              <div class="operation">
+                <input type="number" name="operand1" id="operand1" placeholder="123">
+                <select name="operation-type" id="operation-type">
+                  <option selected value="add">+</option>
+                  <option value="substract">-</option>
+                  <option value="multiply">x</option>
+                  <option value="divide">/</option>
+                  <option value="module">%</option>
+                </select>
+                <input type="number" name="operand2" id="operand2" placeholder="123">
+              </div>
+            </div>
+            <div class="field">
+              <label for="JTL">Job Time Limit (JTL)</label>
+              <input type="number" name="JTL" id="JTL" min="1" placeholder="123">
+            </div>
+            <div class="field buttons">
+              <button type="button" id="clear-form">Clear</button>
+              <button type="button" id="add-job">Add process</button>
             </div>
           </div>
-          <div class="field">
-            <label for="JTL">Job Time Limit (JTL)</label>
-            <input type="number" name="JTL" id="JTL" min="1" placeholder="123">
-          </div>
-          <div class="field buttons">
-            <button type="button" id="clear-form">Clear</button>
-            <button type="button" id="add-job">Add process</button>
+          <div class="auto">
+            <div class="field">
+              <label for="auto-amount">How many tasks?</label>
+              <input type="number" name="auto-amount" id="auto-amount" placeholder="123">
+            </div>
+            <div class="field buttons">
+              <button type="button" id="auto-gen-tasks">Generate</button>
+            </div>
           </div>
           <hr>
           <div class="field buttons">
@@ -89,7 +105,7 @@
             <div class="titles">
               <span>ID</span>
               <span>Process</span>
-              <span>Time</span>
+              <span>Elapsed Time</span>
             </div>
             <div class="batch permanent">
 
@@ -127,10 +143,10 @@
               <span>Elapsed time: </span>
               <span id="work-total-elapsed-time">0</span>
             </div>
-            <div class="data">
+            <!-- <div class="data">
               <span>Remaining time: </span>
               <span id="work-remaining-time">0</span>
-            </div>
+            </div> -->
             <div class="data">
               <span>Total estimated time: </span>
               <span id="work-total-time">0</span>
@@ -143,7 +159,7 @@
               <span>Pending batches: </span>
               <span id="work-pending-batches">0</span>
             </div>
-            <div class="data">
+            <div class="data dev-name">
               <span>Dev name: </span>
               <span id="work-name">lorem</span>
             </div>

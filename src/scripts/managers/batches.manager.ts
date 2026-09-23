@@ -1,10 +1,6 @@
 import { Queue } from "@structures/index";
-import { type Batch, type Task } from "../types/processing.type";
+import { type Batch, type Task, type TaskInterruption } from "../types/processing.type";
 import HTMLManager from "./html.manager";
-
-const sleep = (ms: number): Promise<void> => {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-};
 
 export default class BatchesManager {
   private static insance: BatchesManager;
@@ -65,6 +61,8 @@ export default class BatchesManager {
 
       while (!auxBatch.isEmpty()) {
         const currentTask: Task = auxBatch.dequeue()!;
+        currentTask.elapsed = 0;
+
         HTMLManager.Instance.screenEnqueue(currentTask);
         this.currentBatch.enqueue(currentTask);
       }
@@ -72,12 +70,26 @@ export default class BatchesManager {
       while (!this.currentBatch.isEmpty()) {
         const currentTask: Task = this.currentBatch.dequeue()!;
         HTMLManager.Instance.screenDequeue();
-        HTMLManager.Instance.screenUpdateCurrent(currentTask, this.batchCount);
-        await sleep(currentTask.time * HTMLManager.msClockSpeed);
-        HTMLManager.Instance.taskTimerSub$!.unsubscribe();
+        const interrupt: TaskInterruption = await HTMLManager.Instance.screenUpdateCurrent(
+          currentTask,
+          this.batchCount,
+        );
 
-        currentTask.answer = this.solveTask(currentTask);
-        HTMLManager.Instance.updateDoneTask(currentTask);
+        if (interrupt == "err") {
+          currentTask.answer = "ERROR"
+          HTMLManager.Instance.updateDoneTask(currentTask);
+        }
+
+        if (interrupt == "inOut") {
+          this.currentBatch.enqueue(currentTask);
+          HTMLManager.Instance.screenEnqueue(currentTask);
+        }
+
+        if (interrupt == "none") {
+          currentTask.answer = this.solveTask(currentTask);
+          HTMLManager.Instance.updateDoneTask(currentTask);
+        }
+
       }
     }
     HTMLManager.Instance.globalTimerSub$!.unsubscribe();

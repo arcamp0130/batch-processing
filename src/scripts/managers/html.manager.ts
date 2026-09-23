@@ -1,10 +1,14 @@
-import { Operations, type OperationNames } from "../types/math.type";
+import {
+  OperationsSymbols,
+  type OperationNames,
+  operations,
+} from "../types/math.type";
 import { Queue } from "@structures/index";
-import { type Batch, type Task } from "../types/processing.type";
+import { type Batch, type Task, type TaskInterruption } from "../types/processing.type";
 import { BatchesManager } from "@managers/index";
 
-import { interval, Observable, Subscription } from "rxjs";
-import { map as rxjsMap, startWith } from "rxjs/operators";
+import { Observable, Subscription, timer } from "rxjs";
+import { take } from "rxjs/operators";
 
 export default class HTMLManager {
   private static insance: HTMLManager;
@@ -16,14 +20,18 @@ export default class HTMLManager {
   private currentBatch: Batch | null;
   private taskIds: number[] = [];
   private timeSum: number = 0;
+  private globalElapsed: number = 0;
+  private paused: boolean = false;
 
   public static msClockSpeed: number = 500;
 
   private globalTimer$: Observable<number> | undefined = undefined;
-  private taskTimer$: Observable<number> | undefined = undefined;
 
   public globalTimerSub$: Subscription | undefined = undefined;
   public taskTimerSub$: Subscription | undefined = undefined;
+  private interruptedTask: ((exitWithError: TaskInterruption) => void) | undefined;
+  private resumeTaskTimer: (() => void) | undefined;
+
 
   private readonly titleDisplay: HTMLElement | null;
 
@@ -35,6 +43,9 @@ export default class HTMLManager {
   private readonly workingTask: { [key: string]: HTMLElement | null };
   private readonly workingSpecs: { [key: string]: HTMLElement | null };
   private readonly stateMessage: { [key: string]: HTMLElement | null };
+  private readonly forms: { [key: string]: HTMLElement | null };
+
+  private readonly autoGenCheck: HTMLInputElement | null;
 
   private readonly noJobsSpan: HTMLElement | null;
   private readonly devNameSpan: HTMLElement | null;
@@ -61,12 +72,14 @@ export default class HTMLManager {
       operand2: document.querySelector("input#operand2"),
       operation: document.querySelector("select#operation-type"),
       estimatedTime: document.querySelector("input#JTL"),
+      autoAmount: document.querySelector("input#auto-amount"),
     };
 
     this.buttons = {
       clear: document.querySelector("button#clear-form"),
       addJob: document.querySelector("button#add-job"),
       start: document.querySelector("button#start"),
+      autoGenTasks: document.querySelector("button#auto-gen-tasks"),
     };
 
     this.alert = {
@@ -92,7 +105,7 @@ export default class HTMLManager {
     this.workingSpecs = {
       totalTime: document.querySelector("span#work-total-elapsed-time"),
       totalEstimatedTime: document.querySelector("span#work-total-time"),
-      remainingTime: document.querySelector("span#work-remaining-time"),
+      // remainingTime: document.querySelector("span#work-remaining-time"),
       pendingBatches: document.querySelector("span#work-pending-batches"),
       currentBatch: document.querySelector("span#work-current-batch"),
     };
@@ -101,6 +114,13 @@ export default class HTMLManager {
       element: document.querySelector("div.working div.state"),
       text: document.querySelector("div.state span#state-message"),
     };
+
+    this.forms = {
+      manual: document.querySelector("div.form div.manual"),
+      auto: document.querySelector("div.form div.auto"),
+    };
+
+    this.autoGenCheck = document.querySelector("input#auto-gen");
 
     this.noJobsSpan = document.querySelector("span#no-jobs");
     this.devNameSpan = document.querySelector("span#work-name");
@@ -200,10 +220,7 @@ export default class HTMLManager {
     this.currentBatch = new Queue<Task>();
   }
 
-  private addTask(): void {
-    this.hideError();
-    if (!this.goodData()) return;
-
+  private appendTask(task: Task): void {
     if (this.batchCount === 0) {
       this.noJobsSpan!.style.display = "none";
       this.tables["preview"]!.style.display = "block";
@@ -218,6 +235,20 @@ export default class HTMLManager {
 
     this.currentBatchTaskCount++;
 
+    const newRecord = this.batchRecord(task);
+
+    this.timeSum += task.time;
+
+    this.currentBatch?.enqueue(task);
+
+    this.taskIds.push(task.id);
+    this.htmlCurrentBatch!.appendChild(newRecord);
+  }
+
+  private buildTask(): void {
+    this.hideError();
+    if (!this.goodData()) return;
+
     const newTask: Task = {
       id: +this.inputs["processId"]!.value,
       operand1: +this.inputs["operand1"]!.value,
@@ -225,16 +256,48 @@ export default class HTMLManager {
       operand2: +this.inputs["operand2"]!.value,
       time: +this.inputs["estimatedTime"]!.value,
     };
-    const newRecord = this.batchRecord(newTask);
 
-    this.timeSum += +this.inputs["estimatedTime"]!.value;
-
-    this.currentBatch?.enqueue(newTask);
-
-    this.taskIds.push(+this.inputs["processId"]!.value);
-    this.htmlCurrentBatch!.appendChild(newRecord);
+    this.appendTask(newTask);
     this.clearForm();
   }
+
+  private analyzeKey = (e: KeyboardEvent): void => {
+    switch (e.key) {
+      case 'E': case 'e':
+        if (this.interruptedTask && !this.paused) {
+          this.taskTimerSub$?.unsubscribe();
+          this.interruptedTask("inOut");
+          this.interruptedTask = undefined;
+        }
+        break;
+
+      case 'W': case 'w':
+        if (this.interruptedTask && !this.paused) {
+          this.taskTimerSub$?.unsubscribe();
+          this.interruptedTask("err");
+          this.interruptedTask = undefined;
+        }
+        break;
+
+      case 'P': case 'p':
+        if (this.interruptedTask && !this.paused) {
+          this.paused = true;
+          this.taskTimerSub$?.unsubscribe();
+          this.globalTimerSub$?.unsubscribe();
+          this.stateMessage["text"]!.textContent = "Paused";
+        }
+        break;
+
+      case 'C': case 'c':
+        if (this.paused) {
+          this.paused = false;
+          this.startGlobalTimer(true);
+          this.resumeTaskTimer?.();
+          this.stateMessage["text"]!.textContent = "Processing";
+        }
+        break;
+    }
+  };
 
   private startProcessing(): void {
     this.hideError();
@@ -250,35 +313,109 @@ export default class HTMLManager {
     this.displays["process"]!.style.display = "grid";
     this.workingSpecs["totalEstimatedTime"]!.textContent = `${this.timeSum}`;
     this.titleDisplay!.textContent = "Processing";
-    this.devNameSpan!.textContent = this.inputs["username"]!.value;
 
-    this.globalTimer$ = interval(HTMLManager.msClockSpeed).pipe(
-      startWith(0),
-      rxjsMap((val) => val + 1),
-    );
+    if (this.autoGenCheck!.checked) {
+      const devName: HTMLElement | null =
+        document.querySelector("div.dev-name");
+      devName!.style.display = "none";
+    } else {
+      this.devNameSpan!.textContent = this.inputs["username"]!.value;
+    }
 
-    this.globalTimerSub$ = this.globalTimer$.subscribe((count) => {
-      this.workingSpecs["totalTime"]!.textContent = `${count}`;
-      this.workingSpecs["remainingTime"]!.textContent =
-        `${this.timeSum - count}`;
-    });
+    this.globalElapsed = 0;
+    this.startGlobalTimer(false);
 
+    document.addEventListener("keydown", this.analyzeKey)
     BatchesManager.Instance.getControl();
+  }
+
+  private randIntInRange(min: number, max: number): number {
+    const _min = Math.floor(min);
+    const _max = Math.floor(max);
+
+    return Math.floor(Math.random() * (_max - _min) + _min);
+  }
+
+  private get randomOperation(): OperationNames {
+    const index: number = Math.floor(Math.random() * operations.length);
+    return operations[index]!;
+  }
+
+  private get randomTask(): Task {
+    let randId: number;
+
+    do
+      randId = this.randIntInRange(1, 9999); // artibrary max value
+    while (this.taskIds.includes(randId));
+
+    const task: Task = {
+      id: randId,
+      operand1: this.randIntInRange(0, 99), // artibrary max value
+      operation: this.randomOperation,
+      operand2: this.randIntInRange(0, 99), // artibrary max value
+      time: this.randIntInRange(5, 20),
+    };
+
+    return task;
+  }
+
+  private async generateTasks(): Promise<void> {
+    this.hideError();
+
+    if (
+      this.inputs["autoAmount"]!.value == "" || // empty
+      isNaN(+this.inputs["autoAmount"]!.value) || // NaN
+      +this.inputs["autoAmount"]!.value <= 0 // <= 0
+    ) {
+      this.showError(
+        "What should I do?",
+        "You forgot or incorrectly wrote the tasks amount to generate",
+      );
+      return;
+    }
+
+    let i = 0;
+    while (i < +this.inputs["autoAmount"]!.value) {
+      this.appendTask(this.randomTask);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      i++;
+    }
   }
 
   private addListeners(): void {
     this.buttons["clear"]!.addEventListener("click", () => this.clearForm());
-    this.buttons["addJob"]!.addEventListener("click", () => this.addTask());
-    document.addEventListener("keydown", (event) => {
-      if (event.key == "Enter") this.addTask();
-    });
+    this.buttons["addJob"]!.addEventListener("click", () => this.buildTask());
     this.buttons["start"]!.addEventListener("click", () =>
       this.startProcessing(),
     );
+    this.buttons["autoGenTasks"]!.addEventListener("click", () =>
+      this.generateTasks(),
+    );
+
+    this.autoGenCheck!.addEventListener("change", () => {
+      if (this.autoGenCheck!.checked) {
+        this.forms["manual"]!.style.display = "none";
+        this.forms["auto"]!.style.display = "block";
+      } else {
+        this.forms["manual"]!.style.display = "block";
+        this.forms["auto"]!.style.display = "none";
+      }
+    });
   }
 
   private init(): void {
     this.addListeners();
+  }
+
+  private startGlobalTimer(resume: boolean): void {
+    const elapsedBeforeResume = this.globalElapsed;
+    const initialDelay = resume ? HTMLManager.msClockSpeed : 0;
+
+    this.globalTimer$ = timer(initialDelay, HTMLManager.msClockSpeed);
+    this.globalTimerSub$ = this.globalTimer$.subscribe((ticks) => {
+      this.globalElapsed = resume ? elapsedBeforeResume + ticks + 1 : ticks;
+      this.workingSpecs["totalTime"]!.textContent = `${this.globalElapsed}`;
+    });
   }
 
   private batchRecord(task: Task): HTMLElement {
@@ -291,12 +428,15 @@ export default class HTMLManager {
     const timeSpan: HTMLElement = document.createElement("span");
 
     idSpan.textContent = `${task.id}`;
-    operationSpan.textContent = `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
+    operationSpan.textContent = `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
     timeSpan.textContent = `${task.time}`;
     if (task.answer) {
       if (task.answer == "ERROR") resultSpan.setAttribute("error", "true");
       resultSpan.textContent = task.answer;
     }
+
+    if (task.elapsed !== undefined) 
+      timeSpan.textContent = `${task.elapsed}`
 
     record.appendChild(idSpan);
     record.appendChild(operationSpan);
@@ -329,21 +469,37 @@ export default class HTMLManager {
     this.tables["queue"]!.appendChild(this.batchRecord(task));
   }
 
-  public screenUpdateCurrent(task: Task, batchNum: number) {
+  public screenUpdateCurrent(task: Task, batchNum: number): Promise<TaskInterruption> {
     this.workingTask["batch"]!.textContent = `${batchNum}`;
     this.workingTask["id"]!.textContent = `${task.id}`;
     this.workingTask["job"]!.textContent =
-      `${task.operand1} ${Operations[task.operation]} ${task.operand2}`;
-
-    this.taskTimer$ = interval(HTMLManager.msClockSpeed).pipe(
-      startWith(0),
-      rxjsMap((val) => val + 1),
-    );
-    this.taskTimerSub$ = this.taskTimer$.subscribe(
-      (count) => (this.workingTask["elapsedTime"]!.textContent = `${count}`),
-    );
+      `${task.operand1} ${OperationsSymbols[task.operation]} ${task.operand2}`;
 
     this.workingTask["estimatedTime"]!.textContent = `${task.time}`;
+
+    return new Promise((resolve) => {
+      this.interruptedTask = resolve;
+      this.resumeTaskTimer = (): void => {
+        const elapsed = task.elapsed ?? 0;
+        const taskTimer = timer(0, HTMLManager.msClockSpeed).pipe(
+          take(task.time - elapsed + 1),
+        );
+        this.workingTask["elapsedTime"]!.textContent = `${elapsed}`;
+
+        this.taskTimerSub$ = taskTimer.subscribe({
+          next: (elapsedTicks) => {
+            task.elapsed = elapsed + elapsedTicks;
+            this.workingTask["elapsedTime"]!.textContent = `${task.elapsed}`;
+          },
+          complete: () => {
+            this.resumeTaskTimer = undefined;
+            this.interruptedTask = undefined;
+            resolve("none");
+          },
+        });
+      };
+      this.resumeTaskTimer();
+    });
   }
 
   public updateDoneTask(task: Task) {
@@ -361,7 +517,10 @@ export default class HTMLManager {
   }
 
   public setDone() {
+    this.resumeTaskTimer = undefined;
+    this.paused = false;
     this.stateMessage["element"]!.setAttribute("done", "");
     this.stateMessage["text"]!.textContent = "Finished!";
+    document.removeEventListener("keydown", this.analyzeKey);
   }
 }

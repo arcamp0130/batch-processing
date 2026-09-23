@@ -70,6 +70,16 @@ main {
   }
 }
 
+.form {
+  .manual {
+    display: block; // toggles to none when auto-gen is used
+  }
+
+  .auto {
+    display: none; // toggles to block when auto-gen is used
+  }
+}
+
 .preview {
   display: flex;
   flex-direction: column;
@@ -181,6 +191,13 @@ main {
   margin: 1rem 0;
   width: auto;
 
+  &.use-auto {
+    flex-direction: row;
+    gap: 0.5rem;
+    justify-content: center;
+    align-content: center;
+  }
+
   input,
   select,
   button {
@@ -200,7 +217,12 @@ main {
       outline: 1px solid scheme.$foreground-color;
       background-color: scheme.$background-hover;
     }
+
+    &[type="checkbox"] {
+      margin: 0;
+    }
   }
+
 
   .operation {
     display: flex;
